@@ -41,19 +41,63 @@
             <v-card-title><span class="text-h5">{{ formTitle }}</span></v-card-title>
             <v-card-text>
               <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-file-input v-model="imageFile" label="Poză Pacient / Document" prepend-icon="mdi-camera" variant="outlined" accept="image/*"></v-file-input>
-                  </v-col>
-                  <v-col cols="12" sm="6"><v-text-field v-model="editedItem.lastName" label="Nume"></v-text-field></v-col>
-                  <v-col cols="12" sm="6"><v-text-field v-model="editedItem.firstName" label="Prenume"></v-text-field></v-col>
-                  <v-col cols="12"><v-text-field v-model="editedItem.cnp" label="CNP"></v-text-field></v-col>
-                  <v-col cols="12"><v-text-field v-model="editedItem.diagnosis" label="Diagnostic"></v-text-field></v-col>
-                  <v-col cols="12" sm="6">
-                    <v-select v-model="editedItem.status" :items="['internat', 'externat', 'urgență', 'decedat']" label="Status"></v-select>
-                  </v-col>
-                  <v-col cols="12" sm="6"><v-text-field v-model="editedItem.salon" label="Salon"></v-text-field></v-col>
-                </v-row>
+                <v-form ref="form" @submit.prevent="save">
+                  <v-row>
+                    <v-col cols="12">
+                      <v-file-input v-model="imageFile" label="Poză Pacient / Document" prepend-icon="mdi-camera" variant="outlined" accept="image/*"></v-file-input>
+                    </v-col>
+                    
+                    <v-col cols="12" sm="6">
+                      <v-text-field 
+                        v-model="editedItem.lastName" 
+                        label="Nume" 
+                        :rules="[rules.required, rules.minChars]"
+                      ></v-text-field>
+                    </v-col>
+                    
+                    <v-col cols="12" sm="6">
+                      <v-text-field 
+                        v-model="editedItem.firstName" 
+                        label="Prenume"
+                        :rules="[rules.required, rules.minChars]"
+                      ></v-text-field>
+                    </v-col>
+                    
+                    <v-col cols="12">
+                      <v-text-field 
+                        v-model="editedItem.cnp" 
+                        label="CNP"
+                        :rules="[rules.required, rules.cnpValidator]"
+                        counter="13"
+                      ></v-text-field>
+                    </v-col>
+                    
+                    <v-col cols="12">
+                      <v-text-field 
+                        v-model="editedItem.diagnosis" 
+                        label="Diagnostic"
+                        :rules="[rules.required]"
+                      ></v-text-field>
+                    </v-col>
+                    
+                    <v-col cols="12" sm="6">
+                      <v-select 
+                        v-model="editedItem.status" 
+                        :items="['internat', 'externat', 'urgență', 'decedat']" 
+                        label="Status"
+                        :rules="[rules.required]"
+                      ></v-select>
+                    </v-col>
+                    
+                    <v-col cols="12" sm="6">
+                      <v-text-field 
+                        v-model="editedItem.salon" 
+                        label="Salon"
+                        :rules="[rules.required]"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-form>
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -73,16 +117,16 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../store/auth';
 import { useSnackbarStore } from '../store/snackbar';
-// IMPORTĂM COMPONENTA NOUĂ
 import Sidebar from '../components/Sidebar.vue';
 
 const notify = useSnackbarStore();
 const authStore = useAuthStore();
-const drawer = ref(true); // Aceasta variabilă controlează Sidebar-ul prin v-model
+const drawer = ref(true);
 const loading = ref(false);
 const patients = ref([]);
 const dialog = ref(false);
 const imageFile = ref(null);
+const form = ref(null);
 
 const headers = [
   { title: 'Poză', key: 'image', sortable: false },
@@ -98,6 +142,15 @@ const defaultItem = { firstName: '', lastName: '', cnp: '', diagnosis: '', statu
 const editedItem = ref({ ...defaultItem });
 const editedIndex = ref(-1);
 const formTitle = computed(() => editedIndex.value === -1 ? 'Pacient Nou' : 'Editare Pacient');
+
+const rules = {
+  required: value => !!value || 'Acest câmp este obligatoriu.',
+  minChars: value => (value && value.length >= 2) || 'Minim 2 caractere.',
+  cnpValidator: value => {
+    const pattern = /^[0-9]{13}$/;
+    return pattern.test(value) || 'CNP invalid (trebuie să aibă 13 cifre).';
+  }
+};
 
 const getAuthHeader = () => ({
   headers: {
@@ -115,6 +168,12 @@ const fetchPatients = async () => {
 };
 
 const save = async () => {
+  const { valid } = await form.value.validate();
+  if (!valid) {
+    notify.show('Te rog corectează erorile din formular!', 'error');
+    return;
+  }
+
   try {
     const formData = new FormData();
     formData.append('firstName', editedItem.value.firstName);

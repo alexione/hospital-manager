@@ -37,21 +37,7 @@
                                 </v-avatar>
                                 <div>
                                     <div class="text-caption text-grey">Pacienți Totali</div>
-                                    <div class="text-h5 font-weight-bold">1,245</div>
-                                </div>
-                            </v-card-text>
-                        </v-card>
-                    </v-col>
-
-                    <v-col cols="12" sm="6" md="3">
-                        <v-card elevation="2" class="rounded-lg">
-                            <v-card-text class="d-flex align-center">
-                                <v-avatar color="green-lighten-4" class="mr-4" size="50">
-                                    <v-icon color="green" size="30">mdi-calendar-check</v-icon>
-                                </v-avatar>
-                                <div>
-                                    <div class="text-caption text-grey">Programări Azi</div>
-                                    <div class="text-h5 font-weight-bold">34</div>
+                                    <div class="text-h5 font-weight-bold">{{ stats.total }}</div>
                                 </div>
                             </v-card-text>
                         </v-card>
@@ -64,8 +50,8 @@
                                     <v-icon color="orange" size="30">mdi-bed</v-icon>
                                 </v-avatar>
                                 <div>
-                                    <div class="text-caption text-grey">Paturi Ocupate</div>
-                                    <div class="text-h5 font-weight-bold">85%</div>
+                                    <div class="text-caption text-grey">Pacienți Internați</div>
+                                    <div class="text-h5 font-weight-bold">{{ stats.internati }}</div>
                                 </div>
                             </v-card-text>
                         </v-card>
@@ -79,7 +65,7 @@
                                 </v-avatar>
                                 <div>
                                     <div class="text-caption text-grey">Urgențe</div>
-                                    <div class="text-h5 font-weight-bold">3</div>
+                                    <div class="text-h5 font-weight-bold">{{ stats.urgente }}</div>
                                 </div>
                             </v-card-text>
                         </v-card>
@@ -128,16 +114,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'; // Am adaugat onMounted
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useRouter } from 'vue-router';
-import axios from 'axios'; // Am adaugat axios
+import axios from 'axios';
 import Sidebar from '../components/Sidebar.vue';
 
 const authStore = useAuthStore();
 const drawer = ref(true);
 
 const userEmail = computed(() => authStore.user?.email || 'Guest');
+
+const userName = computed(() => userEmail.value.split('@')[0]); 
+const isAdmin = computed(() => authStore.isAdmin); 
+
 const stats = ref({ total: 0, internati: 0, urgente: 0, recenti: [] });
 
 const fetchStats = async () => {
@@ -159,7 +149,6 @@ const getStatusColor = (status) => {
 };
 
 
-// Încărcăm datele când intrăm pe pagină
 onMounted(() => {
     fetchStats();
 });

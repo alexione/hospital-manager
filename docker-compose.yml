@@ -35,7 +35,7 @@ services:
       - /app/node_modules
       - ./server/uploads:/app/uploads
 
-  # 3. Frontend (Vue) - ACUM ESTE ACTIV
+  # 3. Frontend (Vue)
   client:
     build: ./client
     container_name: hospital_client

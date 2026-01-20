@@ -5,24 +5,18 @@ const User = require('../models/User');
 const upload = require('../middleware/uploadMiddleware');
 const router = express.Router();
 
-// ==============================
-// 1. RUTA REGISTER
-// ==============================
 router.post('/register', upload.single('avatar'), async (req, res) => {
     try {
         const { email, password, role } = req.body;
         
-        // Verificăm dacă userul există
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: "Email already in use." });
         }
 
-        // Criptăm parola
         const hashedPassword = await bcrypt.hash(password, 10);
         const avatarPath = req.file ? req.file.filename : null;
 
-        // Creăm userul
         await User.create({
             email,
             password: hashedPassword,
@@ -38,26 +32,20 @@ router.post('/register', upload.single('avatar'), async (req, res) => {
     }
 });
 
-// ==============================
-// 2. RUTA LOGIN
-// ==============================
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Căutăm userul
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
 
-        // Verificăm parola
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
             return res.status(401).json({ message: "Invalid password." });
         }
 
-        // Generăm Token-ul
         const token = jwt.sign(
             { id: user.id, role: user.role }, 
             process.env.JWT_SECRET,

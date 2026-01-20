@@ -13,7 +13,7 @@ const Patient = sequelize.define('Patient', {
     cnp: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true 
+        unique: true
     },
     diagnosis: {
         type: DataTypes.STRING,
@@ -25,11 +25,11 @@ const Patient = sequelize.define('Patient', {
     },
     salon: {
         type: DataTypes.STRING,
-        allowNull: true 
+        allowNull: true
     },
     image: {
         type: DataTypes.STRING,
-        allowNull: true 
+        allowNull: true
     }
 });
 

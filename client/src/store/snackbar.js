@@ -4,8 +4,8 @@ export const useSnackbarStore = defineStore('snackbar', {
     state: () => ({
         visible: false,
         message: '',
-        color: 'success', // poate fi: success, error, warning, info
-        timeout: 3000     // dispare după 3 secunde
+        color: 'success',
+        timeout: 3000
     }),
     actions: {
         show(msg, type = 'success') {

@@ -32,6 +32,13 @@
               <v-btn type="submit" color="primary" block :loading="loading">
                 Autentificare
               </v-btn>
+
+              <div class="text-center mt-4">
+                <router-link to="/register" class="text-decoration-none text-primary font-weight-bold">
+                  Nu ai cont? Înregistrează-te
+                </router-link>
+              </div>
+
             </v-form>
           </v-card-text>
         </v-card>
@@ -59,7 +66,6 @@ const handleLogin = async () => {
     
     try {
         await authStore.login(email.value, password.value);
-        // Dacă e succes, redirecționăm către Dashboard (îl facem imediat)
         router.push('/dashboard');
     } catch (error) {
         errorMessage.value = error;

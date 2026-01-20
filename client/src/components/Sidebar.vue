@@ -38,18 +38,14 @@ import { computed } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useRouter } from 'vue-router';
 
-// 1. Definim props și emits pentru v-model
-// Asta permite părintelui (Dashboard) să controleze deschiderea/închiderea
 const props = defineProps(['modelValue']);
 const emit = defineEmits(['update:modelValue']);
 
-// 2. Computed property pentru v-model (Two-way binding)
 const drawerState = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 });
 
-// 3. Logica de Auth
 const authStore = useAuthStore();
 const router = useRouter();
 
