@@ -1,0 +1,20 @@
+# Ignoră dependințele (le instalăm automat cu npm install/docker)
+node_modules/
+*/node_modules/
+
+# Ignoră fișierele de sistem
+.DS_Store
+Thumbs.db
+
+# Ignoră logurile
+*.log
+
+# Ignoră datele locale din baza de date (nu vrem să urcăm baza de date efectivă)
+mysql_data/
+
+# Ignoră setările editorului (VS Code)
+.vscode/
+
+# Opțional: Ignoră imaginile uploadate (de obicei nu se pun pe git)
+server/uploads/*
+!server/uploads/.gitkeep

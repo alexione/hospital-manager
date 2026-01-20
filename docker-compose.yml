@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 1. Baza de date
+  db:
+    image: mysql:8.0
+    container_name: hospital_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hospital_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # 2. Backend (Express)
+  server:
+    build: ./server
+    container_name: hospital_server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: rootpassword
+      DB_NAME: hospital_db
+      JWT_SECRET: cheiaMeaSecretaFoarteLunga
+      PORT: 3000
+    depends_on:
+      - db
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - ./server/uploads:/app/uploads
+
+  # 3. Frontend (Vue) - ACUM ESTE ACTIV
+  client:
+    build: ./client
+    container_name: hospital_client
+    ports:
+      - "8080:5173" # Portul 8080 pe PC-ul tau -> 5173 in Docker
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - server
+
+volumes:
+  mysql_data:
