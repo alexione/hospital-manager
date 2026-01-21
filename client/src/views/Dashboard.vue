@@ -75,31 +75,34 @@
                 <v-row class="mt-4">
                     <v-col cols="12">
                         <v-card title="Internări Recente" elevation="2" class="rounded-lg">
-                            <v-table>
-                                <thead>
-                                    <tr>
-                                        <th class="text-left">Nume</th>
-                                        <th class="text-left">Diagnostic</th>
-                                        <th class="text-left">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="item in stats.recenti" :key="item.id">
-                                        <td>{{ item.lastName }} {{ item.firstName }}</td>
-                                        <td>{{ item.diagnosis }}</td>
-                                        <td>
-                                            <v-chip :color="getStatusColor(item.status)" size="small" variant="flat"
-                                                class="text-white">
-                                                {{ item.status }}
-                                            </v-chip>
-                                        </td>
-                                    </tr>
-                                    <tr v-if="stats.recenti.length === 0">
-                                        <td colspan="3" class="text-center text-grey">Nu există pacienți înregistrați.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </v-table>
+                            
+                            <v-data-table
+                                :headers="headers"
+                                :items="stats.recenti"
+                                hide-default-footer
+                                class="pa-2"
+                            >
+                                <template v-slot:item.lastName="{ item }">
+                                    {{ item.lastName }} {{ item.firstName }}
+                                </template>
+
+                                <template v-slot:item.status="{ item }">
+                                    <v-chip 
+                                        :color="getStatusColor(item.status)" 
+                                        size="small" 
+                                        variant="flat"
+                                        class="text-white"
+                                    >
+                                        {{ item.status }}
+                                    </v-chip>
+                                </template>
+
+                                <template v-slot:no-data>
+                                    <div class="text-grey">Nu există pacienți înregistrați.</div>
+                                </template>
+                            </v-data-table>
+
+                            <v-divider></v-divider>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn variant="text" color="primary" to="/patients">Vezi toți pacienții</v-btn>
@@ -124,11 +127,17 @@ const authStore = useAuthStore();
 const drawer = ref(true);
 
 const userEmail = computed(() => authStore.user?.email || 'Guest');
-
 const userName = computed(() => userEmail.value.split('@')[0]); 
 const isAdmin = computed(() => authStore.isAdmin); 
 
 const stats = ref({ total: 0, internati: 0, urgente: 0, recenti: [] });
+
+const headers = [
+    { title: 'Nume', key: 'lastName', sortable: false },
+    { title: 'Diagnostic', key: 'diagnosis', sortable: false },
+    { title: 'Status', key: 'status', sortable: false },
+    { title: 'Salon', key: 'salon', sortable: false },
+];
 
 const fetchStats = async () => {
     try {
@@ -147,7 +156,6 @@ const getStatusColor = (status) => {
     if (status === 'urgență') return 'red';
     return 'grey';
 };
-
 
 onMounted(() => {
     fetchStats();

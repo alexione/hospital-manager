@@ -90,11 +90,12 @@
                     </v-col>
                     
                     <v-col cols="12" sm="6">
-                      <v-text-field 
-                        v-model="editedItem.salon" 
+                      <v-select
+                        v-model="editedItem.salon"
+                        :items="['1', '2', '3', '4']" 
                         label="Salon"
                         :rules="[rules.required]"
-                      ></v-text-field>
+                      ></v-select>
                     </v-col>
                   </v-row>
                 </v-form>
@@ -135,6 +136,7 @@ const headers = [
   { title: 'CNP', key: 'cnp' },
   { title: 'Diagnostic', key: 'diagnosis' },
   { title: 'Status', key: 'status' },
+  { title: 'Salon', key: 'salon' },
   { title: 'Acțiuni', key: 'actions', sortable: false },
 ];
 
