@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Baza de date
+  # 1. Baza de date MySQL
   db:
     image: mysql:8.0
     container_name: hospital_db
@@ -14,38 +14,28 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  # 2. Backend (Express)
-  server:
-    build: ./server
-    container_name: hospital_server
+  # 2. Aplicația Unificată (Nuxt 3 Frontend + Backend)
+  app:
+    build: ./client
+    container_name: hospital_app
     restart: always
     ports:
       - "3000:3000"
+    # Citeste variabilele standard din .env
+    env_file:
+      - ./client/.env
     environment:
+      # Suprascriem doar pentru contextul Docker (unde baza de date nu este localhost, ci se cheamă "db")
       DB_HOST: db
-      DB_USER: root
-      DB_PASS: rootpassword
-      DB_NAME: hospital_db
-      JWT_SECRET: cheiaMeaSecretaFoarteLunga
-      PORT: 3000
+      DB_PORT: 3306
+      HOST: 0.0.0.0
     depends_on:
       - db
     volumes:
-      - ./server:/app
-      - /app/node_modules
-      - ./server/uploads:/app/uploads
-
-  # 3. Frontend (Vue)
-  client:
-    build: ./client
-    container_name: hospital_client
-    ports:
-      - "8080:5173" # Portul 8080 pe PC-ul tau -> 5173 in Docker
-    volumes:
       - ./client:/app
       - /app/node_modules
-    depends_on:
-      - server
+      # Pastram folderul cu imaginile pacientilor in afara containerului ca sa nu se piarda
+      - ./client/public/uploads:/app/public/uploads
 
 volumes:
   mysql_data:

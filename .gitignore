@@ -7,7 +7,16 @@ node_modules/
 Thumbs.db
 
 # Ignoră logurile
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Ignoră fișiere locale temporare
+*.local
 
 # Ignoră datele locale din baza de date (nu vrem să urcăm baza de date efectivă)
 mysql_data/
@@ -16,5 +25,22 @@ mysql_data/
 .vscode/
 
 # Opțional: Ignoră imaginile uploadate (de obicei nu se pun pe git)
-server/uploads/*
-!server/uploads/.gitkeep
+client/public/uploads/*
+!client/public/uploads/.gitkeep
+
+# Ignoră fișierele de mediu (parole, secrete, porturi)
+#.env
+#.env.*
+#!.env.example
+
+# Ignoră fișierele generate de Nuxt 3 (build-uri)
+.nuxt/
+client/.nuxt/
+.output/
+client/.output/
+dist/
+client/dist/
+
+# Ignoră fișierele generate de agenții asistenți (opțional)
+.tempmediaStorage/
+scratchpad*/
