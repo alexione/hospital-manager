@@ -1,9 +1,9 @@
 <template>
   <v-navigation-drawer
     v-model="drawerState"
-    expand-on-hover
-    permanent
-    rail
+    :expand-on-hover="!isMobile"
+    :rail="!isMobile"
+    :permanent="!isMobile"
     color="primary"
   >
     <v-list>
@@ -31,6 +31,7 @@
       ></v-list-item>
 
       <v-list-item
+        v-if="showStructure"
         prepend-icon="mdi-hospital-building"
         title="Structură (Paturi/Saloane)"
         to="/structure"
@@ -77,6 +78,7 @@
 <script setup>
 import { computed } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { useDisplay } from "vuetify";
 
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue"]);
@@ -87,8 +89,15 @@ const drawerState = computed({
 });
 
 const authStore = useAuthStore();
+const { smAndDown } = useDisplay();
+const isMobile = computed(() => smAndDown.value);
 
 const isAdmin = computed(() => authStore.isAdmin);
+
+const showStructure = computed(() => {
+  const role = authStore.user?.role?.toLowerCase();
+  return role === 'admin' || role === 'medic' || role === 'asistent';
+});
 
 const handleLogout = () => {
   authStore.logout();

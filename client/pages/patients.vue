@@ -31,7 +31,7 @@
 
             <template v-slot:item.actions="{ item }">
               <v-icon size="small" class="me-2" color="blue" @click="editItem(item)">mdi-pencil</v-icon>
-              <v-icon size="small" color="red" @click="deleteItem(item)">mdi-delete</v-icon>
+              <v-icon v-if="isAdmin" size="small" color="red" @click="deleteItem(item)">mdi-delete</v-icon>
             </template>
           </v-data-table>
         </v-card>
@@ -96,7 +96,8 @@ import Sidebar from '../components/Sidebar.vue';
 
 const notify = useSnackbarStore();
 const authStore = useAuthStore();
-const drawer = ref(true);
+const drawer = ref(false);
+const isAdmin = computed(() => authStore.isAdmin);
 const loading = ref(false);
 const patients = ref([]);
 const dialog = ref(false);
@@ -223,8 +224,8 @@ const getStatusColor = (status) => {
       return 'orange';
   } else if (status === 'externat') {
       return 'green';
-  } else if (status === 'urgență') {
-      return 'red';
+  } else if (status === 'admis') {
+      return 'blue';
   } else {
       return 'grey';
   }

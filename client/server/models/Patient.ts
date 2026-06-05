@@ -35,7 +35,7 @@ const Patient = sequelize.define('Patient', {
     },
     status: {
         type: DataTypes.STRING,
-        defaultValue: 'internat'
+        defaultValue: 'admis'
     },
     salon: {
         type: DataTypes.STRING,

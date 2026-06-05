@@ -6,6 +6,8 @@ import Pat from './Pat';
 import Patient from './Patient';
 import Internare from './Internare';
 import Tratament from './Tratament';
+import Administrare from './Administrare';
+import Masuratori from './Masuratori';
 
 // Definiere relații
 Sectie.hasMany(Salon, { foreignKey: 'id_sectie', onDelete: 'CASCADE' });
@@ -23,6 +25,12 @@ Internare.belongsTo(Pat, { foreignKey: 'id_pat' });
 Internare.hasMany(Tratament, { foreignKey: 'id_internare', onDelete: 'CASCADE' });
 Tratament.belongsTo(Internare, { foreignKey: 'id_internare' });
 
+Tratament.hasMany(Administrare, { foreignKey: 'id_tratament', onDelete: 'CASCADE' });
+Administrare.belongsTo(Tratament, { foreignKey: 'id_tratament' });
+
+Internare.hasMany(Masuratori, { foreignKey: 'id_internare', onDelete: 'CASCADE' });
+Masuratori.belongsTo(Internare, { foreignKey: 'id_internare' });
+
 export {
     sequelize,
     Angajat,
@@ -31,5 +39,7 @@ export {
     Pat,
     Patient,
     Internare,
-    Tratament
+    Tratament,
+    Administrare,
+    Masuratori
 };

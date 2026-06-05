@@ -36,10 +36,25 @@ export default defineEventHandler(async (event) => {
             body.cod_pacient = Math.floor(100000 + Math.random() * 900000);
         }
 
+        // Forțăm starea 'admis' la crearea pacientului în sistem
+        body.status = 'admis';
+
         const newPatient = await Patient.create(body);
         return newPatient;
     } catch (err: any) {
         console.error(err);
-        throw createError({ statusCode: 400, statusMessage: "Eroare la creare: " + err.message });
+        let msg = err.message;
+        if (err.errors && err.errors.length > 0) {
+            msg = err.errors.map((e: any) => {
+                if (e.path === 'cnp' && e.type === 'unique violation') {
+                    return 'Un pacient cu acest CNP este deja înregistrat.';
+                }
+                if (e.path === 'cod_pacient' && e.type === 'unique violation') {
+                    return 'Codul de pacient este deja utilizat.';
+                }
+                return e.message;
+            }).join(', ');
+        }
+        throw createError({ statusCode: 400, statusMessage: "Eroare la creare: " + msg });
     }
 });
