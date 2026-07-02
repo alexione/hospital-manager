@@ -3,72 +3,76 @@
 
         <Sidebar v-model="drawer" />
 
-        <v-app-bar elevation="1">
-            <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-            <v-app-bar-title>Panou de Control</v-app-bar-title>
+        <v-app-bar elevation="0" class="border-b bg-white px-4">
+            <v-app-bar-nav-icon @click="drawer = !drawer" color="indigo-darken-4"></v-app-bar-nav-icon>
+            <v-app-bar-title class="font-weight-bold text-indigo-darken-4">Panou de Control</v-app-bar-title>
 
             <v-spacer></v-spacer>
 
             <div class="mr-4 d-flex align-center">
                 <div class="text-right mr-3 d-none d-sm-block">
-                    <div class="font-weight-bold">{{ userEmail }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ isAdmin ? 'Administrator' : 'Medic/Asistent' }}
+                    <div class="font-weight-bold text-grey-darken-3">{{ userEmail }}</div>
+                    <div class="text-caption text-indigo font-weight-medium">
+                      {{ isAdmin ? 'Administrator' : 'Personal Medical' }}
                     </div>
                 </div>
-                <v-avatar color="secondary">
+                <v-avatar color="indigo-lighten-4" class="text-indigo-darken-4 font-weight-bold">
                     <v-icon icon="mdi-account"></v-icon>
                 </v-avatar>
             </div>
         </v-app-bar>
 
-        <v-main class="bg-grey-lighten-4">
+        <v-main class="bg-slate-50">
             <v-container fluid class="pa-6">
 
-                <h2 class="text-h5 text-sm-h4 mb-6 text-grey-darken-3">
-                    Buna ziua, {{ userName }}!
-                </h2>
+                <div class="mb-6">
+                    <h2 class="text-h4 font-weight-bold text-grey-darken-3">
+                        Bun venit, {{ userName }}!
+                    </h2>
+                    <p class="text-subtitle-1 text-grey-darken-1">Sumarul activității și indicatorii de spitalizare de astăzi</p>
+                </div>
 
                 <!-- Row 1: Key Metrics -->
                 <v-row>
                     <v-col cols="12" sm="6" md="4">
-                        <v-card elevation="2" class="rounded-lg">
-                            <v-card-text class="d-flex align-center">
-                                <v-avatar color="blue-lighten-4" class="mr-4" size="50">
-                                    <v-icon color="blue" size="30">mdi-account-injury</v-icon>
+                        <v-card elevation="0" class="rounded-xl shadow-soft hover-scale card-stat-gradient-blue transition-all-fast">
+                            <v-card-text class="d-flex align-center pa-6">
+                                <v-avatar color="blue-lighten-4" class="mr-4 shadow-soft" size="60">
+                                    <v-icon color="blue-darken-2" size="32">mdi-account-injury</v-icon>
                                 </v-avatar>
                                 <div>
-                                    <div class="text-caption text-grey">Pacienti Totali</div>
-                                    <div class="text-h5 font-weight-bold">{{ stats.total }}</div>
+                                    <div class="text-caption font-weight-bold text-blue-darken-3 text-uppercase">Pacienți Înregistrați</div>
+                                    <div class="text-h4 font-weight-black text-blue-darken-4 mt-1">{{ stats.total }}</div>
                                 </div>
                             </v-card-text>
                         </v-card>
                     </v-col>
 
                     <v-col cols="12" sm="6" md="4">
-                        <v-card elevation="2" class="rounded-lg">
-                            <v-card-text class="d-flex align-center">
-                                <v-avatar color="orange-lighten-4" class="mr-4" size="50">
-                                    <v-icon color="orange" size="30">mdi-bed</v-icon>
+                        <v-card elevation="0" class="rounded-xl shadow-soft hover-scale card-stat-gradient-orange transition-all-fast">
+                            <v-card-text class="d-flex align-center pa-6">
+                                <v-avatar color="orange-lighten-4" class="mr-4 shadow-soft" size="60">
+                                    <v-icon color="orange-darken-2" size="32">mdi-bed</v-icon>
                                 </v-avatar>
                                 <div>
-                                    <div class="text-caption text-grey">Pacienti Internati</div>
-                                    <div class="text-h5 font-weight-bold">{{ stats.internati }}</div>
+                                    <div class="text-caption font-weight-bold text-orange-darken-3 text-uppercase">Pacienți Internați</div>
+                                    <div class="text-h4 font-weight-black text-orange-darken-4 mt-1">{{ stats.internati }}</div>
                                 </div>
                             </v-card-text>
                         </v-card>
                     </v-col>
 
                     <v-col cols="12" sm="12" md="4">
-                        <v-card elevation="2" class="rounded-lg">
-                            <v-card-text class="d-flex align-center">
-                                <v-avatar color="teal-lighten-4" class="mr-4" size="50">
-                                    <v-icon color="teal" size="30">mdi-percent</v-icon>
+                        <v-card elevation="0" class="rounded-xl shadow-soft hover-scale card-stat-gradient-teal transition-all-fast">
+                            <v-card-text class="d-flex align-center pa-6">
+                                <v-avatar color="teal-lighten-4" class="mr-4 shadow-soft" size="60">
+                                    <v-icon color="teal-darken-2" size="32">mdi-percent</v-icon>
                                 </v-avatar>
                                 <div>
-                                    <div class="text-caption text-grey">Grad Ocupare Paturi</div>
-                                    <div class="text-h5 font-weight-bold">
+                                    <div class="text-caption font-weight-bold text-teal-darken-3 text-uppercase">Grad Ocupare Paturi</div>
+                                    <div class="text-h4 font-weight-black text-teal-darken-4 mt-1">
                                         {{ generalOccupancy }}%
-                                        <span class="text-caption text-grey-darken-1 font-weight-regular ml-1">
+                                        <span class="text-caption text-teal-darken-2 font-weight-medium ml-1">
                                             ({{ reportsData?.paturiOcupateCount || 0 }}/{{ reportsData?.totalPaturi || 0 }})
                                         </span>
                                     </div>
@@ -79,16 +83,19 @@
                 </v-row>
 
                 <!-- Row 2: Department Occupancy & PDF Reports -->
-                <v-row class="mt-4">
+                <v-row class="mt-6">
                     <!-- Left: Department Stats Table -->
                     <v-col cols="12" md="8">
-                        <v-card elevation="2" class="rounded-lg fill-height" title="Grad de Ocupare pe Sectii">
+                        <v-card elevation="0" class="rounded-xl shadow-soft bg-white border fill-height">
+                            <v-card-item class="py-4 border-b">
+                                <v-card-title class="font-weight-bold text-grey-darken-3">Grad de Ocupare pe Secții</v-card-title>
+                            </v-card-item>
                             <v-card-text class="pa-0">
                                 <div style="overflow-x: auto;">
-                                    <v-table hover class="px-2 pb-2" style="min-width: 600px;">
+                                    <v-table hover class="px-4 pb-4" style="min-width: 600px;">
                                         <thead>
                                             <tr>
-                                                <th class="text-left font-weight-bold text-grey-darken-3" style="min-width: 150px;">Sectie</th>
+                                                <th class="text-left font-weight-bold text-grey-darken-3 py-3" style="min-width: 150px;">Secție</th>
                                                 <th class="text-center font-weight-bold text-grey-darken-3">Cod</th>
                                                 <th class="text-center font-weight-bold text-grey-darken-3">Saloane</th>
                                                 <th class="text-center font-weight-bold text-grey-darken-3">Paturi</th>
@@ -97,31 +104,32 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="sec in reportsData?.sectiiStats" :key="sec.id">
-                                                <td class="text-left font-weight-medium">{{ sec.nume }}</td>
+                                                <td class="text-left font-weight-bold text-grey-darken-3">{{ sec.nume }}</td>
                                                 <td class="text-center">
-                                                    <v-chip size="small" color="primary" variant="tonal" class="font-weight-bold">
+                                                    <v-chip size="small" color="primary" variant="flat" class="font-weight-bold">
                                                         {{ sec.cod_sectie }}
                                                     </v-chip>
                                                 </td>
                                                 <td class="text-center">{{ sec.total_saloane }}</td>
-                                                <td class="text-center font-weight-semibold">{{ sec.paturi_ocupate }} / {{ sec.total_paturi }}</td>
+                                                <td class="text-center font-weight-bold text-grey-darken-4">{{ sec.paturi_ocupate }} / {{ sec.total_paturi }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex align-center justify-center">
-                                                        <span class="mr-2 text-caption font-weight-bold" style="width: 35px; text-align: right;">
+                                                        <span class="mr-2 text-caption font-weight-bold text-grey-darken-3" style="width: 35px; text-align: right;">
                                                             {{ sec.grad_ocupare }}%
                                                         </span>
                                                         <v-progress-linear
                                                             :model-value="sec.grad_ocupare"
-                                                            height="8"
+                                                            height="10"
                                                             rounded
                                                             :color="getOccupancyColor(sec.grad_ocupare)"
-                                                            style="width: 70px;"
+                                                            style="width: 80px;"
+                                                            class="shadow-soft"
                                                         ></v-progress-linear>
                                                     </div>
                                                 </td>
                                             </tr>
                                             <tr v-if="!reportsData?.sectiiStats?.length">
-                                                <td colspan="5" class="text-center text-grey py-4">Nu exista date despre sectii.</td>
+                                                <td colspan="5" class="text-center text-grey py-6">Nu există date despre secții.</td>
                                             </tr>
                                         </tbody>
                                     </v-table>
@@ -132,43 +140,46 @@
 
                     <!-- Right: PDF Report Actions -->
                     <v-col cols="12" md="4">
-                        <v-card elevation="2" class="rounded-lg fill-height d-flex flex-column" title="Rapoarte și Documente (PDF)">
-                            <v-card-text class="flex-grow-1 d-flex flex-column justify-space-between">
-                                <p class="text-body-2 text-grey-darken-1 mb-4">
-                                    Generati documente PDF oficiale de activitate și liste de spitalizare pentru tiparire sau raportare administrativa.
+                        <v-card elevation="0" class="rounded-xl shadow-soft bg-white border fill-height d-flex flex-column">
+                            <v-card-item class="py-4 border-b">
+                                <v-card-title class="font-weight-bold text-grey-darken-3">Rapoarte și Documente (PDF)</v-card-title>
+                            </v-card-item>
+                            <v-card-text class="flex-grow-1 d-flex flex-column justify-space-between pa-6">
+                                <p class="text-body-2 text-grey-darken-1 mb-6">
+                                    Generați documente PDF oficiale de activitate și liste de spitalizare pentru tipărire sau raportare administrativă.
                                 </p>
-                                <div class="d-flex flex-column gap-3 mb-4">
+                                <div class="d-flex flex-column gap-3 mb-6">
                                     <v-btn
                                         color="primary"
                                         prepend-icon="mdi-file-pdf-box"
-                                        class="rounded-lg py-3 height-auto text-none justify-start"
+                                        class="rounded-xl py-4 height-auto text-none justify-start shadow-soft"
                                         :loading="loadingReports"
                                         variant="elevated"
                                         block
                                         @click="generateGeneralReportPDF"
                                     >
-                                        <div class="text-left">
+                                        <div class="text-left py-1">
                                             <div class="font-weight-bold">Raport General Spital</div>
-                                            <div class="text-caption text-blue-lighten-4 font-weight-regular">Sumar indicatori și sectii</div>
+                                            <div class="text-caption text-indigo-lighten-4 font-weight-regular">Sumar indicatori și secții</div>
                                         </div>
                                     </v-btn>
 
                                     <v-btn
                                         color="orange-darken-2"
                                         prepend-icon="mdi-file-document-multiple-outline"
-                                        class="rounded-lg py-3 height-auto text-none justify-start"
+                                        class="rounded-xl py-4 height-auto text-none justify-start shadow-soft"
                                         :loading="loadingReports"
                                         variant="elevated"
                                         block
                                         @click="generateAdmittedPatientsPDF"
                                     >
-                                        <div class="text-left">
-                                            <div class="font-weight-bold">Registru Pacienti Internati</div>
-                                            <div class="text-caption text-orange-lighten-4 font-weight-regular">Fisa de vizita / Lista pacienti activi</div>
+                                        <div class="text-left py-1">
+                                            <div class="font-weight-bold">Registru Pacienți Internați</div>
+                                            <div class="text-caption text-orange-lighten-4 font-weight-regular">Fișa de vizită / Lista pacienți activi</div>
                                         </div>
                                     </v-btn>
                                 </div>
-                                <div class="text-caption text-grey text-center">
+                                <div class="text-caption text-grey text-center font-weight-medium">
                                     Format document: Standard A4 (PDF)
                                 </div>
                             </v-card-text>
@@ -177,19 +188,22 @@
                 </v-row>
 
                 <!-- Row 2.5: Demographics Charts -->
-                <v-row class="mt-4">
+                <v-row class="mt-6">
                     <v-col cols="12">
-                        <v-card elevation="2" class="rounded-lg" title="Statistici Demografice Pacienți">
+                        <v-card elevation="0" class="rounded-xl shadow-soft bg-white border">
+                            <v-card-item class="py-4 border-b">
+                                <v-card-title class="font-weight-bold text-grey-darken-3">Statistici Demografice Pacienți</v-card-title>
+                            </v-card-item>
                             <v-card-text class="pa-6">
                                 <v-row>
-                                    <v-col cols="12" sm="6" class="d-flex flex-column align-center">
-                                        <h3 class="text-subtitle-1 font-weight-bold text-grey-darken-2 mb-4">Distribuție pe Vârste</h3>
+                                    <v-col cols="12" sm="6" class="d-flex flex-column align-center border-e-sm py-4">
+                                        <h3 class="text-subtitle-1 font-weight-bold text-indigo-darken-4 mb-4">Distribuție pe Vârste</h3>
                                         <div style="position: relative; height: 250px; max-width: 250px; width: 100%; margin: 0 auto;">
                                             <canvas id="ageChart"></canvas>
                                         </div>
                                     </v-col>
-                                    <v-col cols="12" sm="6" class="d-flex flex-column align-center">
-                                        <h3 class="text-subtitle-1 font-weight-bold text-grey-darken-2 mb-4">Distribuție pe Sex</h3>
+                                    <v-col cols="12" sm="6" class="d-flex flex-column align-center py-4">
+                                        <h3 class="text-subtitle-1 font-weight-bold text-indigo-darken-4 mb-4">Distribuție pe Sex</h3>
                                         <div style="position: relative; height: 250px; max-width: 250px; width: 100%; margin: 0 auto;">
                                             <canvas id="sexChart"></canvas>
                                         </div>
@@ -201,20 +215,25 @@
                 </v-row>
 
                 <!-- Row 3: Recent Admissions -->
-                <v-row class="mt-4">
+                <v-row class="mt-6">
                     <v-col cols="12">
-                        <v-card title="Internari Recente" elevation="2" class="rounded-lg">
+                        <v-card elevation="0" class="rounded-xl shadow-soft bg-white border">
+                            <v-card-item class="py-4 border-b">
+                                <v-card-title class="font-weight-bold text-grey-darken-3">Internări Recente</v-card-title>
+                            </v-card-item>
                             
                             <div style="overflow-x: auto;">
                                 <v-data-table
                                     :headers="headers"
                                     :items="stats.recenti"
                                     hide-default-footer
-                                    class="pa-2"
+                                    class="pa-4 bg-transparent"
                                     style="min-width: 600px;"
                                 >
                                     <template v-slot:item.lastName="{ item }">
-                                        {{ item.lastName }} {{ item.firstName }}
+                                        <div class="font-weight-bold text-grey-darken-3">
+                                          {{ item.lastName }} {{ item.firstName }}
+                                        </div>
                                     </template>
 
                                     <template v-slot:item.status="{ item }">
@@ -222,22 +241,23 @@
                                             :color="getStatusColor(item.status)" 
                                             size="small" 
                                             variant="flat"
-                                            class="text-white"
+                                            class="text-white font-weight-bold"
                                         >
                                             {{ item.status }}
                                         </v-chip>
                                     </template>
 
                                     <template v-slot:no-data>
-                                        <div class="text-grey">Nu exista pacienti înregistrati.</div>
+                                        <div class="text-grey py-6">Nu există pacienți înregistrați.</div>
                                     </template>
                                 </v-data-table>
                             </div>
 
                             <v-divider></v-divider>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn variant="text" color="primary" to="/patients">Vezi toti pacientii</v-btn>
+                            <v-card-actions class="pa-4 justify-end">
+                                <v-btn variant="text" color="primary" to="/patients" class="font-weight-bold text-none rounded-lg">
+                                    Vezi toți pacienții
+                                </v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-col>
@@ -258,7 +278,7 @@ import Sidebar from '../components/Sidebar.vue';
 
 const authStore = useAuthStore();
 const notify = useSnackbarStore();
-const drawer = ref(false);
+const drawer = ref(true);
 
 const userEmail = computed(() => authStore.user?.email || 'Guest');
 const userName = computed(() => userEmail.value.split('@')[0]); 

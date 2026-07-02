@@ -2,12 +2,12 @@
   <v-layout class="fill-height">
     <Sidebar v-model="drawer" />
 
-    <v-app-bar elevation="1">
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-app-bar-title>Structură Spital (Secții, Saloane, Paturi)</v-app-bar-title>
+    <v-app-bar elevation="0" class="border-b bg-white px-4">
+      <v-app-bar-nav-icon @click="drawer = !drawer" color="indigo-darken-4"></v-app-bar-nav-icon>
+      <v-app-bar-title class="font-weight-bold text-indigo-darken-4">Structură Spital</v-app-bar-title>
     </v-app-bar>
 
-    <v-main class="bg-grey-lighten-4">
+    <v-main class="bg-slate-50">
       <v-container fluid class="pa-6">
         <!-- Main Actions & Title -->
         <div class="d-flex flex-wrap align-center justify-space-between mb-6 gap-4">
@@ -20,7 +20,7 @@
             color="primary"
             prepend-icon="mdi-plus"
             size="large"
-            class="rounded-lg shadow-sm"
+            class="rounded-lg shadow-soft text-none font-weight-bold"
             @click="openDialog('sectie')"
           >
             Adaugă Secție
@@ -28,7 +28,7 @@
         </div>
 
         <!-- Section Selection Tabs -->
-        <v-card v-if="structure.length" class="rounded-lg elevation-2 mb-6">
+        <v-card v-if="structure.length" class="rounded-xl shadow-soft mb-6 border-0" elevation="0">
           <v-tabs
             v-model="activeSectieId"
             color="primary"
@@ -39,7 +39,7 @@
               v-for="sectie in structure"
               :key="sectie.id"
               :value="sectie.id"
-              class="text-body-1 font-weight-medium py-4 px-6"
+              class="text-body-1 font-weight-bold py-4 px-6 text-none"
               @click="selectSectie(sectie)"
             >
               <v-icon start>mdi-domain</v-icon>
@@ -49,11 +49,11 @@
         </v-card>
 
         <!-- No Sections Available -->
-        <v-card v-else class="text-center py-12 px-6 rounded-lg elevation-2 bg-white">
+        <v-card v-else class="text-center py-12 px-6 rounded-xl shadow-soft bg-white border-0" elevation="0">
           <v-icon color="grey-lighten-1" size="80" class="mb-4">mdi-hospital-building</v-icon>
           <h3 class="text-h5 font-weight-bold text-grey-darken-2 mb-2">Nu există secții înregistrate</h3>
           <p class="text-body-1 text-grey-darken-1 mb-6">Adăugați o primă secție pentru a începe configurarea spitalului.</p>
-          <v-btn v-if="isAdmin" color="primary" prepend-icon="mdi-plus" size="large" @click="openDialog('sectie')">
+          <v-btn v-if="isAdmin" color="primary" prepend-icon="mdi-plus" size="large" class="rounded-lg text-none font-weight-bold" @click="openDialog('sectie')">
             Adaugă Secție
           </v-btn>
         </v-card>
@@ -62,17 +62,17 @@
         <v-fade-transition hide-on-leave>
           <div v-if="selectedSectie">
             <!-- Section Info Header -->
-            <v-card class="rounded-lg elevation-2 mb-6 bg-white border-start border-primary border-xl">
+            <v-card class="rounded-xl shadow-soft mb-6 bg-white border-0" elevation="0">
               <v-card-text class="d-flex flex-wrap align-center justify-space-between pa-6">
                 <div>
-                  <div class="text-overline text-primary font-weight-bold mb-1">Detalii Secție</div>
+                  <div class="text-overline text-indigo font-weight-bold mb-1">Detalii Secție</div>
                   <h2 class="text-h5 font-weight-bold text-grey-darken-3">
                     {{ selectedSectie.nume }}
                   </h2>
                   <div class="text-subtitle-2 text-grey-darken-1 mt-1">
-                    Cod Secție: <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ selectedSectie.cod_sectie }}</v-chip>
+                    Cod Secție: <v-chip size="small" variant="flat" color="primary" class="font-weight-bold">{{ selectedSectie.cod_sectie }}</v-chip>
                     <span class="mx-2">•</span>
-                    Total Saloane: <span class="font-weight-bold">{{ selectedSectie.Salons ? selectedSectie.Salons.length : 0 }}</span>
+                    Total Saloane: <span class="font-weight-bold text-grey-darken-3">{{ selectedSectie.Salons ? selectedSectie.Salons.length : 0 }}</span>
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-3 align-center">
@@ -81,7 +81,7 @@
                     color="primary"
                     variant="elevated"
                     prepend-icon="mdi-file-pdf-box"
-                    class="rounded-lg"
+                    class="rounded-lg text-none font-weight-bold shadow-soft"
                     :loading="loadingPdf"
                     @click="generateBedsStatusPDF"
                   >
@@ -92,7 +92,7 @@
                     color="orange-darken-1"
                     variant="elevated"
                     prepend-icon="mdi-plus"
-                    class="rounded-lg"
+                    class="rounded-lg text-none font-weight-bold shadow-soft text-white"
                     @click="openDialog('salon')"
                   >
                     Adaugă Salon
@@ -102,7 +102,7 @@
                     color="red"
                     variant="outlined"
                     prepend-icon="mdi-delete"
-                    class="rounded-lg"
+                    class="rounded-lg text-none font-weight-bold"
                     @click="deleteSectie(selectedSectie.id)"
                   >
                     Șterge Secție
@@ -116,10 +116,11 @@
               <v-card
                 v-for="salon in selectedSectie.Salons"
                 :key="salon.id"
-                class="mb-6 elevation-2 rounded-lg border-start border-orange-darken-1 border-xl overflow-hidden"
+                class="mb-6 shadow-soft rounded-xl border overflow-hidden"
+                elevation="0"
               >
                 <!-- Salon Header -->
-                <v-toolbar flat color="grey-lighten-5" class="border-bottom px-4">
+                <v-toolbar flat color="grey-lighten-5" class="border-b px-4 py-1">
                   <v-icon color="orange-darken-1" class="mr-2" size="large">mdi-door-open</v-icon>
                   <span class="text-h6 font-weight-bold text-grey-darken-3">
                     Salon {{ salon.cod_salon }}
@@ -129,9 +130,9 @@
                     <v-btn
                       prepend-icon="mdi-plus"
                       size="small"
-                      color="green-darken-1"
+                      color="success"
                       variant="flat"
-                      class="rounded-lg text-white font-weight-bold mr-2"
+                      class="rounded-lg text-white font-weight-bold mr-2 text-none shadow-soft"
                       @click="openAddPatDialog(salon)"
                     >
                       Adaugă Pat
@@ -159,7 +160,7 @@
                     >
                       <v-card
                         :class="[
-                          'rounded-xl elevation-1 border transition-swing position-relative',
+                          'rounded-xl elevation-0 border transition-swing position-relative hover-scale',
                           isOccupied(pat) 
                             ? 'border-red-lighten-3 bg-red-lighten-5' 
                             : 'border-green-lighten-3 bg-green-lighten-5'
@@ -199,12 +200,12 @@
                             ></v-btn>
                           </div>
 
-                          <v-divider class="mb-3"></v-divider>
+                          <v-divider class="mb-3 border-opacity-15"></v-divider>
 
                           <!-- Bed Status Info -->
                           <div v-if="isOccupied(pat)">
                             <div class="d-flex align-center mb-2">
-                              <v-chip color="red" size="x-small" class="font-weight-bold text-white uppercase mr-2">Ocupat</v-chip>
+                              <v-chip color="red-darken-1" size="x-small" class="font-weight-bold text-white uppercase mr-2">Ocupat</v-chip>
                             </div>
                             <div class="text-body-2 font-weight-bold text-grey-darken-4 text-truncate">
                               {{ getPatientName(pat) }}
@@ -216,7 +217,7 @@
                           
                           <div v-else>
                             <div class="d-flex align-center mb-2">
-                              <v-chip color="green" size="x-small" class="font-weight-bold text-white uppercase mr-2">Liber</v-chip>
+                              <v-chip color="success" size="x-small" class="font-weight-bold text-white uppercase mr-2">Liber</v-chip>
                             </div>
                             <div class="text-body-2 text-grey-darken-1 italic py-1">
                               Pat disponibil pentru internare
@@ -230,13 +231,13 @@
                   <!-- Empty Beds state -->
                   <div v-else class="text-center py-6 text-grey-darken-1">
                     <v-icon color="grey-lighten-1" size="48" class="mb-2">mdi-bed-off</v-icon>
-                    <div class="text-body-1">Nu sunt paturi adăugate în acest salon.</div>
+                    <div class="text-body-1 font-weight-medium">Nu sunt paturi adăugate în acest salon.</div>
                     <v-btn 
                       v-if="isAdmin"
                       variant="text" 
-                      color="green-darken-1" 
+                      color="success" 
                       prepend-icon="mdi-plus" 
-                      class="mt-2"
+                      class="mt-2 text-none font-weight-bold"
                       @click="openAddPatDialog(salon)"
                     >
                       Adaugă un pat
@@ -247,11 +248,11 @@
             </div>
 
             <!-- Empty Salons state -->
-            <v-card v-else class="text-center py-12 px-6 rounded-lg elevation-2 bg-white">
+            <v-card v-else class="text-center py-12 px-6 rounded-xl shadow-soft bg-white border-0" elevation="0">
               <v-icon color="grey-lighten-1" size="64" class="mb-3">mdi-door-closed</v-icon>
               <h3 class="text-h6 font-weight-bold text-grey-darken-2 mb-1">Nu există saloane în această secție</h3>
               <p class="text-body-2 text-grey-darken-1 mb-4">Adăugați un salon pentru a putea configura paturile.</p>
-              <v-btn v-if="isAdmin" color="orange-darken-1" prepend-icon="mdi-plus" @click="openDialog('salon')">
+              <v-btn v-if="isAdmin" color="orange-darken-1" class="text-white text-none font-weight-bold shadow-soft" prepend-icon="mdi-plus" @click="openDialog('salon')">
                 Adaugă Salon
               </v-btn>
             </v-card>
@@ -260,8 +261,8 @@
 
         <!-- Adaugare Resursa Dialog -->
         <v-dialog v-model="dialog" max-width="450px">
-          <v-card class="rounded-xl overflow-hidden">
-            <v-card-title class="bg-primary text-white py-4 px-6">
+          <v-card class="rounded-xl overflow-hidden shadow-premium">
+            <v-card-title class="modal-header-gradient py-4 px-6">
               <span class="text-h5 font-weight-bold">{{ dialogTitle }}</span>
             </v-card-title>
             
@@ -276,6 +277,7 @@
                     placeholder="ex: Cardiologie" 
                     variant="outlined" 
                     density="comfortable"
+                    color="primary"
                     required
                     class="mb-3"
                   ></v-text-field>
@@ -285,6 +287,7 @@
                     placeholder="ex: CARD" 
                     variant="outlined" 
                     density="comfortable"
+                    color="primary"
                     required
                   ></v-text-field>
                 </template>
@@ -299,6 +302,7 @@
                     placeholder="ex: 101" 
                     variant="outlined" 
                     density="comfortable"
+                    color="primary"
                     required
                   ></v-text-field>
                 </template>
@@ -312,6 +316,7 @@
                     label="Cod Pat" 
                     variant="outlined" 
                     density="comfortable"
+                    color="primary"
                     required
                   ></v-text-field>
                 </template>
@@ -321,26 +326,26 @@
             
             <v-card-actions class="px-6 pb-6 pt-0">
               <v-spacer></v-spacer>
-              <v-btn color="grey-darken-1" variant="text" class="rounded-lg px-4" @click="dialog = false">Anulează</v-btn>
-              <v-btn color="primary" variant="elevated" class="rounded-lg px-6" @click="save">Salvează</v-btn>
+              <v-btn color="grey-darken-1" variant="text" class="rounded-lg text-none font-weight-bold" @click="dialog = false">Anulează</v-btn>
+              <v-btn color="primary" variant="elevated" class="rounded-lg text-none font-weight-bold px-6 shadow-soft" @click="save">Salvează</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
 
         <!-- Dialog confirmare stergere -->
         <v-dialog v-model="confirmDialog" max-width="450">
-          <v-card class="rounded-xl">
-            <v-card-title class="text-h5 text-red-darken-1 pa-6 pb-2 d-flex align-center">
-              <v-icon color="red" class="mr-2" size="large">mdi-alert-circle</v-icon>
-              Confirmare Ștergere
+          <v-card class="rounded-xl shadow-premium overflow-hidden">
+            <v-card-title class="bg-red-darken-1 text-white py-4 px-6 d-flex align-center">
+              <v-icon color="white" class="mr-2" size="large">mdi-alert-circle</v-icon>
+              <span class="font-weight-bold">Confirmare Ștergere</span>
             </v-card-title>
-            <v-card-text class="px-6 py-4 text-body-1 text-grey-darken-3">
+            <v-card-text class="px-6 pt-6 text-body-1 text-grey-darken-3">
               {{ confirmMessage }}
             </v-card-text>
-            <v-card-actions class="px-6 pb-6 pt-2">
+            <v-card-actions class="px-6 pb-6">
               <v-spacer></v-spacer>
-              <v-btn color="grey-darken-1" variant="text" class="rounded-lg px-4" @click="confirmDialog = false">Renunță</v-btn>
-              <v-btn color="red-darken-1" variant="elevated" class="rounded-lg px-6" @click="executeDelete">Șterge</v-btn>
+              <v-btn color="grey-darken-1" variant="text" class="rounded-lg text-none font-weight-bold shadow-soft" @click="confirmDialog = false">Renunță</v-btn>
+              <v-btn color="red-darken-1" variant="elevated" class="rounded-lg text-none font-weight-bold px-6 shadow-soft" @click="executeDelete">Șterge</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -359,7 +364,7 @@ import Sidebar from '../../components/Sidebar.vue';
 
 const notify = useSnackbarStore();
 const authStore = useAuthStore();
-const drawer = ref(false);
+const drawer = ref(true);
 const structure = ref([]);
 
 const isAdmin = computed(() => authStore.isAdmin);

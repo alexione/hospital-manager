@@ -2,36 +2,77 @@
   <v-layout class="fill-height">
     <Sidebar v-model="drawer" />
 
-    <v-app-bar elevation="1">
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-app-bar-title>Gestiune Personal Medical</v-app-bar-title>
+    <v-app-bar elevation="0" class="border-b bg-white px-4">
+      <v-app-bar-nav-icon @click="drawer = !drawer" color="indigo-darken-4"></v-app-bar-nav-icon>
+      <v-app-bar-title class="font-weight-bold text-indigo-darken-4">Gestiune Personal Medical</v-app-bar-title>
     </v-app-bar>
 
-    <v-main class="bg-grey-lighten-4">
-      <v-container fluid>
-        <v-card class="elevation-2 rounded-lg">
-          <v-toolbar flat color="white">
-            <v-toolbar-title>Lista Angajați</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-text-field v-model="search" append-inner-icon="mdi-magnify" label="Caută..." single-line hide-details
-              density="compact" class="mx-4" style="max-width: 300px"></v-text-field>
-            <v-btn color="primary" prepend-icon="mdi-plus" @click="openAddDialog">Adaugă Angajat</v-btn>
-          </v-toolbar>
+    <v-main class="bg-slate-50" style="height: calc(100vh - 64px); overflow: hidden;">
+      <v-container fluid class="pa-6 d-flex flex-column" style="height: 100%; overflow: hidden;">
+        
+        <div class="d-flex align-center justify-space-between mb-6 flex-shrink-0">
+          <div>
+            <h1 class="text-h4 font-weight-bold text-grey-darken-3">Personal Medical</h1>
+            <p class="text-subtitle-1 text-grey-darken-1">Administrați conturile și permisiunile medicilor și asistenților</p>
+          </div>
+          <v-btn 
+            color="primary" 
+            prepend-icon="mdi-plus" 
+            size="large" 
+            class="rounded-lg shadow-soft text-none font-weight-bold"
+            @click="openAddDialog"
+          >
+            Adaugă Angajat
+          </v-btn>
+        </div>
 
-          <v-data-table :headers="headers" :items="employees" :loading="loading" :search="search" class="pa-2">
+        <v-card class="rounded-xl shadow-soft border-0 d-flex flex-column flex-grow-1 overflow-hidden" elevation="0">
+          <v-card-item class="py-4 border-b flex-shrink-0">
+            <v-row align="center">
+              <v-col cols="12" sm="6">
+                <v-card-title class="font-weight-bold text-grey-darken-3">Lista Angajați</v-card-title>
+              </v-col>
+              <v-col cols="12" sm="6" class="d-flex justify-sm-end">
+                <v-text-field 
+                  v-model="search" 
+                  prepend-inner-icon="mdi-magnify" 
+                  label="Caută angajat..." 
+                  single-line 
+                  hide-details
+                  variant="outlined"
+                  density="comfortable" 
+                  class="w-100" 
+                  style="max-width: 300px"
+                  color="primary"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-item>
+
+          <v-data-table 
+            :headers="headers" 
+            :items="employees" 
+            :loading="loading" 
+            :search="search" 
+            class="pa-4 bg-transparent flex-grow-1 overflow-y-auto"
+            fixed-header
+            height="100%"
+          >
 
             <template v-slot:item.nume="{ item }">
-              {{ item.nume }}
+              <div class="font-weight-bold text-grey-darken-3">
+                {{ item.nume }} {{ item.prenume }}
+              </div>
             </template>
 
             <template v-slot:item.role="{ item }">
-              <v-chip :color="item.role === 'Admin' ? 'red' : 'blue'" size="small" class="text-white">
+              <v-chip :color="item.role === 'Admin' ? 'red-darken-1' : 'primary'" size="small" class="text-white font-weight-bold">
                 {{ item.role }}
               </v-chip>
             </template>
 
             <template v-slot:item.actions="{ item }">
-              <v-btn icon="mdi-pencil" variant="text" color="blue" size="small" @click="editItem(item)"></v-btn>
+              <v-btn icon="mdi-pencil" variant="text" color="blue" size="small" class="mr-1" @click="editItem(item)"></v-btn>
               <v-btn icon="mdi-delete" variant="text" color="red" size="small" @click="deleteItem(item)"
                 :disabled="item.id === authStore.user?.id"></v-btn>
             </template>
@@ -39,41 +80,43 @@
         </v-card>
 
         <v-dialog v-model="dialog" max-width="500px">
-          <v-card>
-            <v-card-title><span class="text-h5">{{ isEditing ? 'Editare Angajat' : 'Adaugă Angajat Nou'
-                }}</span></v-card-title>
-            <v-card-text>
-              <v-container>
+          <v-card class="rounded-xl overflow-hidden shadow-premium">
+            <v-card-title class="modal-header-gradient py-4 px-6 d-flex align-center">
+              <v-icon start class="mr-2">mdi-account-plus</v-icon>
+              <span class="text-h5 font-weight-bold">{{ isEditing ? 'Editare Angajat' : 'Adaugă Angajat Nou' }}</span>
+            </v-card-title>
+            
+            <v-card-text class="pa-6">
+              <v-container class="pa-0">
                 <v-form ref="form" @submit.prevent="save">
-                  <v-text-field v-model="editedItem.nume" label="Nume" required></v-text-field>
-                  <v-text-field v-model="editedItem.prenume" label="Prenume" required></v-text-field>
-                  <v-text-field v-model="editedItem.email" label="Email" :disabled="isEditing" required
-                    type="email"></v-text-field>
-                  <v-text-field v-if="!isEditing" v-model="editedItem.password" label="Parolă" required
-                    type="password"></v-text-field>
-                  <v-select v-model="editedItem.role" :items="['Admin', 'Medic', 'Asistent', 'Registratură']" label="Rol"
-                    required></v-select>
+                  <v-text-field v-model="editedItem.nume" label="Nume" variant="outlined" density="comfortable" color="primary" class="mb-3" required></v-text-field>
+                  <v-text-field v-model="editedItem.prenume" label="Prenume" variant="outlined" density="comfortable" color="primary" class="mb-3" required></v-text-field>
+                  <v-text-field v-model="editedItem.email" label="Email" :disabled="isEditing" variant="outlined" density="comfortable" color="primary" class="mb-3" required type="email"></v-text-field>
+                  <v-text-field v-if="!isEditing" v-model="editedItem.password" label="Parolă" variant="outlined" density="comfortable" color="primary" class="mb-3" required type="password"></v-text-field>
+                  <v-select v-model="editedItem.role" :items="['Admin', 'Medic', 'Asistent', 'Registratură']" label="Rol" variant="outlined" density="comfortable" color="primary" required></v-select>
                 </v-form>
               </v-container>
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions class="px-6 pb-6 pt-0">
               <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="dialog = false">Anulează</v-btn>
-              <v-btn color="blue-darken-1" variant="elevated" @click="save">Salvează</v-btn>
+              <v-btn color="grey-darken-1" variant="text" class="rounded-lg text-none font-weight-bold" @click="dialog = false">Anulează</v-btn>
+              <v-btn color="primary" variant="elevated" class="rounded-lg text-none font-weight-bold px-6 shadow-soft" @click="save">Salvează</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
 
         <!-- Dialog de confirmare stergere -->
-        <v-dialog v-model="confirmDialog" max-width="400">
-          <v-card>
-            <v-card-title class="text-h5 text-red"><v-icon color="red"
-                class="mr-2">mdi-alert</v-icon>Confirmare</v-card-title>
-            <v-card-text class="pt-4">Sunteți sigur că doriți să ștergeți acest angajat?</v-card-text>
-            <v-card-actions>
+        <v-dialog v-model="confirmDialog" max-width="450">
+          <v-card class="rounded-xl overflow-hidden shadow-premium">
+            <v-card-title class="bg-red-darken-1 text-white py-4 px-6 d-flex align-center">
+              <v-icon color="white" class="mr-2">mdi-alert</v-icon>
+              <span class="font-weight-bold">Confirmare Ștergere</span>
+            </v-card-title>
+            <v-card-text class="pt-6 px-6 text-body-1 text-grey-darken-3">Sunteți sigur că doriți să ștergeți acest angajat?</v-card-text>
+            <v-card-actions class="px-6 pb-6">
               <v-spacer></v-spacer>
-              <v-btn color="grey-darken-1" variant="text" @click="confirmDialog = false">Renunță</v-btn>
-              <v-btn color="red-darken-1" variant="elevated" @click="confirmDelete">Șterge</v-btn>
+              <v-btn color="grey-darken-1" variant="text" class="rounded-lg text-none font-weight-bold" @click="confirmDialog = false">Renunță</v-btn>
+              <v-btn color="red-darken-1" variant="elevated" class="rounded-lg text-none font-weight-bold px-6 shadow-soft" @click="confirmDelete">Șterge</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -92,7 +135,7 @@ import Sidebar from '../../components/Sidebar.vue';
 
 const notify = useSnackbarStore();
 const authStore = useAuthStore();
-const drawer = ref(false);
+const drawer = ref(true);
 const loading = ref(false);
 const employees = ref([]);
 const search = ref('');

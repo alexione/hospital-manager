@@ -2,29 +2,56 @@
   <v-layout class="fill-height">
     <Sidebar v-model="drawer" />
 
-    <v-app-bar elevation="1">
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-app-bar-title>Internări / Externări</v-app-bar-title>
+    <v-app-bar elevation="0" class="border-b bg-white px-4">
+      <v-app-bar-nav-icon @click="drawer = !drawer" color="indigo-darken-4"></v-app-bar-nav-icon>
+      <v-app-bar-title class="font-weight-bold text-indigo-darken-4">Internări / Externări</v-app-bar-title>
     </v-app-bar>
 
-    <v-main class="bg-grey-lighten-4">
-      <v-container fluid>
-        <v-card class="elevation-2 rounded-lg">
-          <v-toolbar flat color="white">
-            <v-toolbar-title>Lista Internări</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn v-if="canManageAdmissions" color="primary" prepend-icon="mdi-plus" @click="openDialog">Internare Nouă</v-btn>
-          </v-toolbar>
+    <v-main class="bg-slate-50" style="height: calc(100vh - 64px); overflow: hidden;">
+      <v-container fluid class="pa-6 d-flex flex-column" style="height: 100%; overflow: hidden;">
+        
+        <div class="d-flex align-center justify-space-between mb-6 flex-shrink-0">
+          <div>
+            <h1 class="text-h4 font-weight-bold text-grey-darken-3">Internări</h1>
+            <p class="text-subtitle-1 text-grey-darken-1">Monitorizați internările active și eliberați paturile la externare</p>
+          </div>
+          <v-btn 
+            v-if="canManageAdmissions" 
+            color="primary" 
+            prepend-icon="mdi-plus" 
+            size="large" 
+            class="rounded-lg shadow-soft text-none font-weight-bold"
+            @click="openDialog"
+          >
+            Internare Nouă
+          </v-btn>
+        </div>
 
-          <v-data-table :headers="headers" :items="admissions" :loading="loading" class="pa-2">
+        <v-card class="rounded-xl shadow-soft border-0 d-flex flex-column flex-grow-1 overflow-hidden" elevation="0">
+          <v-card-item class="py-4 border-b flex-shrink-0">
+            <v-card-title class="font-weight-bold text-grey-darken-3">Lista Internări</v-card-title>
+          </v-card-item>
+
+          <v-data-table 
+            :headers="headers" 
+            :items="admissions" 
+            :loading="loading" 
+            class="pa-4 bg-transparent flex-grow-1 overflow-y-auto"
+            fixed-header
+            height="100%"
+          >
             <template v-slot:item.Patient="{ item }">
-              {{ item.Patient ? `${item.Patient.firstName} ${item.Patient.lastName}` : 'N/A' }}
+              <div class="font-weight-bold text-grey-darken-3">
+                {{ item.Patient ? `${item.Patient.firstName} ${item.Patient.lastName}` : 'N/A' }}
+              </div>
             </template>
             <template v-slot:item.Pat="{ item }">
-              {{ item.Pat ? `${item.Pat.Salon.Sectie.nume} / ${item.Pat.Salon.cod_salon} / Pat ${item.Pat.cod_pat}` : 'Nealocat' }}
+              <span class="font-weight-medium">
+                {{ item.Pat ? `${item.Pat.Salon.Sectie.nume} / Salon ${item.Pat.Salon.cod_salon} / Pat ${item.Pat.cod_pat}` : 'Nealocat' }}
+              </span>
             </template>
             <template v-slot:item.status="{ item }">
-              <v-chip :color="getStatusColor(item.status)" size="small" class="text-white">{{ item.status }}</v-chip>
+              <v-chip :color="getStatusColor(item.status)" size="small" class="text-white font-weight-bold">{{ item.status }}</v-chip>
             </template>
             <template v-slot:item.actions="{ item }">
               <div class="d-flex flex-column flex-sm-row" style="gap: 8px;">
@@ -34,7 +61,7 @@
                   v-if="canViewMedicalFile" 
                   @click="openMedicalFileDialog(item)"
                   style="width: 120px;"
-                  class="text-none font-weight-bold"
+                  class="text-none font-weight-bold rounded-lg shadow-soft"
                 >
                   Fișă Medicală
                 </v-btn>
@@ -44,7 +71,7 @@
                   v-if="item.status === 'internat' && canDischarge" 
                   @click="openDischargeDialog(item)"
                   style="width: 120px;"
-                  class="text-none font-weight-bold"
+                  class="text-none font-weight-bold rounded-lg shadow-soft text-white"
                 >
                   Externează
                 </v-btn>
@@ -55,38 +82,51 @@
 
         <!-- Dialog Internare Noua -->
         <v-dialog v-model="dialog" max-width="600px">
-          <v-card>
-            <v-card-title><span class="text-h5">Internare Nouă</span></v-card-title>
-            <v-card-text>
-              <v-container>
+          <v-card class="rounded-xl overflow-hidden shadow-premium">
+            <v-card-title class="modal-header-gradient py-4 px-6 d-flex align-center">
+              <v-icon start class="mr-2">mdi-file-document-plus</v-icon>
+              <span class="text-h5 font-weight-bold">Internare Nouă</span>
+            </v-card-title>
+            
+            <v-card-text class="pa-6">
+              <v-container class="pa-0">
                 <v-form ref="form" @submit.prevent="save">
                   <v-row>
-                    <v-col cols="12">
+                    <v-col cols="12" class="py-1">
                       <v-select
                         v-model="editedItem.id_pacient"
                         :items="patients"
                         item-title="fullName"
                         item-value="id"
                         label="Pacient"
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
                         :rules="[v => !!v || 'Selectați pacientul']"
                       ></v-select>
                     </v-col>
                     
-                    <v-col cols="12">
+                    <v-col cols="12" class="py-1">
                       <v-text-field 
                         v-model="editedItem.diagnostic" 
                         label="Diagnostic" 
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
                         :rules="[v => !!v || 'Obligatoriu']"
                       ></v-text-field>
                     </v-col>
                     
-                    <v-col cols="12">
+                    <v-col cols="12" class="py-1">
                       <v-select
                         v-model="editedItem.id_pat"
                         :items="beds"
                         item-title="name"
                         item-value="id"
                         label="Pat"
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
                         :rules="[v => !!v || 'Selectați patul']"
                       ></v-select>
                     </v-col>
@@ -94,10 +134,10 @@
                 </v-form>
               </v-container>
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions class="px-6 pb-6 pt-0">
               <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="closeDialog">Anulează</v-btn>
-              <v-btn color="blue-darken-1" variant="elevated" @click="save">Salvează</v-btn>
+              <v-btn color="grey-darken-1" variant="text" class="rounded-lg text-none font-weight-bold" @click="closeDialog">Anulează</v-btn>
+              <v-btn color="primary" variant="elevated" class="rounded-lg text-none font-weight-bold px-6 shadow-soft" @click="save">Salvează</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -339,7 +379,7 @@ import Sidebar from '../../components/Sidebar.vue';
 
 const notify = useSnackbarStore();
 const authStore = useAuthStore();
-const drawer = ref(false);
+const drawer = ref(true);
 const loading = ref(false);
 const admissions = ref([]);
 const patients = ref([]);
