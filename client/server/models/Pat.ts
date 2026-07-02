@@ -16,6 +16,6 @@ const Pat = sequelize.define('Pat', {
         type: DataTypes.INTEGER,
         allowNull: false
     }
-});
+}, { tableName: 'Paturi' });
 
 export default Pat;

@@ -34,12 +34,12 @@ const Angajat = sequelize.define('Angajat', {
     },
     role: {
         type: DataTypes.STRING,
-        defaultValue: 'Recepție'
+        defaultValue: 'Registratură'
     },
     avatar: {
         type: DataTypes.STRING,
         allowNull: true
     }
-});
+}, { tableName: 'Angajati' });
 
 export default Angajat;

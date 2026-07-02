@@ -36,6 +36,6 @@ const Masuratori = sequelize.define('Masuratori', {
         allowNull: false,
         defaultValue: DataTypes.NOW
     }
-});
+}, { tableName: 'Masuratori' });
 
 export default Masuratori;

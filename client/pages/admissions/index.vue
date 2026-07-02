@@ -42,7 +42,7 @@
                   size="small" 
                   color="success" 
                   v-if="item.status === 'internat' && canDischarge" 
-                  @click="discharge(item)"
+                  @click="openDischargeDialog(item)"
                   style="width: 120px;"
                   class="text-none font-weight-bold"
                 >
@@ -295,6 +295,35 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        
+        <!-- Dialog Externare și Recomandări -->
+        <v-dialog v-model="dischargeDialog" max-width="500px">
+          <v-card class="rounded-xl">
+            <v-card-title class="d-flex align-center justify-space-between pa-6">
+              <span class="text-h6 font-weight-bold">Confirmare Externare Pacient</span>
+              <v-btn icon="mdi-close" variant="text" size="small" @click="dischargeDialog = false"></v-btn>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text class="pa-6">
+              <div class="text-body-2 mb-4 text-grey-darken-3">
+                Scrieți mai jos recomandările medicale pentru pacient (ex: tratament post-spitalizare, regim alimentar, repaus):
+              </div>
+              <v-textarea
+                v-model="dischargeRecommendations"
+                label="Recomandări la externare"
+                placeholder="Ex: Repaus la domiciliu 14 zile, regim hiposodat, tratament conform rețetei..."
+                variant="outlined"
+                rows="4"
+                auto-grow
+              ></v-textarea>
+            </v-card-text>
+            <v-card-actions class="px-6 pb-6">
+              <v-spacer></v-spacer>
+              <v-btn color="grey" variant="text" @click="dischargeDialog = false">Renunță</v-btn>
+              <v-btn color="error" variant="elevated" @click="submitDischarge" :loading="dischargeLoading">Confirmă Externarea</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
       </v-container>
     </v-main>
@@ -323,7 +352,7 @@ const userRole = computed(() => authStore.user?.role?.toLowerCase() || '');
 const isAdmin = computed(() => userRole.value === 'admin');
 const isMedic = computed(() => userRole.value === 'medic');
 const isAsistent = computed(() => userRole.value === 'asistent');
-const isReceptie = computed(() => userRole.value === 'recepție');
+const isReceptie = computed(() => userRole.value === 'registratură');
 
 const canManageAdmissions = computed(() => isAdmin.value || isReceptie.value);
 const canDischarge = computed(() => isAdmin.value || isMedic.value);
@@ -349,8 +378,14 @@ const medicalTreatments = ref([]);
 const medicalVitals = ref([]);
 
 const newTreatmentDesc = ref('');
-const treatmentLoading = ref(false);
 const treatmentForm = ref(null);
+const treatmentLoading = ref(false);
+
+// Discharge Recommendations Dialog Refs
+const dischargeDialog = ref(false);
+const dischargeRecommendations = ref('');
+const dischargeLoading = ref(false);
+const selectedDischargeItem = ref(null);
 
 const newVitals = ref({ temperatura: '', tensiune: '', puls: '', greutate: '' });
 const vitalsLoading = ref(false);
@@ -413,6 +448,18 @@ const openMedicalFileDialog = (admission) => {
   fetchMedicalData();
 };
 
+const removeDiacritics = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/ș/g, 's').replace(/Ș/g, 'S')
+    .replace(/ț/g, 't').replace(/Ț/g, 'T')
+    .replace(/ş/g, 's').replace(/Ş/g, 'S')
+    .replace(/ţ/g, 't').replace(/Ţ/g, 'T')
+    .replace(/ă/g, 'a').replace(/Ă/g, 'A')
+    .replace(/â/g, 'a').replace(/Â/g, 'A')
+    .replace(/î/g, 'i').replace(/Î/g, 'I');
+};
+
 const generatePatientReportPDF = async () => {
   if (!selectedAdmission.value) return;
 
@@ -421,75 +468,70 @@ const generatePatientReportPDF = async () => {
     const autoTable = (await import('jspdf-autotable')).default;
 
     const doc = new jsPDF();
-    const primaryColor = [13, 71, 161]; // Navy Blue
-
     const patientName = selectedAdmission.value.Patient 
       ? `${selectedAdmission.value.Patient.firstName} ${selectedAdmission.value.Patient.lastName}`
       : 'N/A';
 
-    // 1. Antet
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 40, 'F');
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    // 1. Antet (Printer-friendly: White background, black text, clean divider line)
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('FISA MEDICALA PACIENT', 15, 20);
+    doc.text(removeDiacritics('FISA MEDICALA PACIENT'), 15, 20);
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}`, 15, 30);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}`, 15, 28);
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(15, 33, 195, 33);
 
     // 2. Date Identificare & Internare
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('1. Date Identificare & Internare', 15, 52);
+    doc.text(removeDiacritics('1. Date Identificare & Internare'), 15, 45);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
-    const detailsLeft = [
-      `Nume Pacient: ${patientName}`,
-      `CNP: ${selectedAdmission.value.Patient?.cnp || 'N/A'}`,
-      `Diagnostic: ${selectedAdmission.value.diagnostic}`
-    ];
+    doc.text(removeDiacritics(`Nume Pacient: ${patientName}`), 15, 53);
+    doc.text(`CNP: ${selectedAdmission.value.Patient?.cnp || 'N/A'}`, 15, 60);
+
+    doc.text(`Cod Internare: ${selectedAdmission.value.cod_internare}`, 110, 53);
+    doc.text(`Data Internarii: ${new Date(selectedAdmission.value.data_internare).toLocaleDateString('ro-RO')}`, 110, 60);
 
     const locationText = selectedAdmission.value.Pat 
       ? `${selectedAdmission.value.Pat.Salon.Sectie.nume} / Sal ${selectedAdmission.value.Pat.Salon.cod_salon} / Pat ${selectedAdmission.value.Pat.cod_pat}`
       : 'Nealocat';
 
-    const detailsRight = [
-      `Cod Internare: ${selectedAdmission.value.cod_internare}`,
-      `Data Internarii: ${new Date(selectedAdmission.value.data_internare).toLocaleDateString('ro-RO')}`,
-      `Locatie: ${locationText}`
-    ];
+    doc.text(removeDiacritics(`Locatie: ${locationText}`), 15, 67);
 
-    let yOffset = 60;
-    for (let i = 0; i < detailsLeft.length; i++) {
-      doc.text(detailsLeft[i], 15, yOffset);
-      doc.text(detailsRight[i], 110, yOffset);
-      yOffset += 7;
-    }
+    const diagText = removeDiacritics(`Diagnostic: ${selectedAdmission.value.diagnostic}`);
+    const splitDiag = doc.splitTextToSize(diagText, 180);
+    doc.text(splitDiag, 15, 74);
 
+    let yOffset = 74 + (splitDiag.length * 5);
     doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
     doc.line(15, yOffset + 2, 195, yOffset + 2);
 
     // 3. Schema de Tratament Prescrisa
     yOffset += 12;
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('2. Schema de Tratament Prescrisa', 15, yOffset);
+    doc.text(removeDiacritics('2. Schema de Tratament Prescrisa'), 15, yOffset);
 
-    const treatmentHeaders = [['Tratament', 'Data Prescriere', 'Administrari inregistrate']];
+    const treatmentHeaders = [[removeDiacritics('Tratament'), removeDiacritics('Data Prescriere'), removeDiacritics('Administrari inregistrate')]];
     const treatmentBody = medicalTreatments.value.map(t => {
       const administrations = t.Administrares && t.Administrares.length
         ? t.Administrares.map(adm => `${adm.nume_asistent} (${new Date(adm.data_administrare).toLocaleString('ro-RO')})${adm.observatii ? ` Obs: ${adm.observatii}` : ''}`).join('\n')
         : 'Neadministrat';
       return [
-        t.descriere,
+        removeDiacritics(t.descriere),
         new Date(t.data_tratament).toLocaleString('ro-RO'),
-        administrations
+        removeDiacritics(administrations)
       ];
     });
 
@@ -497,9 +539,9 @@ const generatePatientReportPDF = async () => {
       startY: yOffset + 5,
       head: treatmentHeaders,
       body: treatmentBody,
-      theme: 'grid',
-      headStyles: { fillColor: primaryColor, fontSize: 10 },
-      bodyStyles: { fontSize: 9 },
+      theme: 'plain',
+      headStyles: { fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
       columnStyles: {
         0: { cellWidth: 70 },
         1: { cellWidth: 40 },
@@ -509,39 +551,35 @@ const generatePatientReportPDF = async () => {
     });
 
     // 4. Monitorizare Semne Vitale
-    const finalY = doc.lastAutoTable.finalY || (yOffset + 15);
+    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || (yOffset + 40);
     
-    let vitalsStartY = finalY + 15;
+    let vitalsStartY = finalY + 12;
     if (vitalsStartY > 240) {
       doc.addPage();
-      vitalsStartY = 25;
+      vitalsStartY = 20;
     }
 
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('3. Monitorizare Semne Vitale', 15, vitalsStartY);
+    doc.text(removeDiacritics('3. Monitorizare Semne Vitale'), 15, vitalsStartY);
 
-    const vitalsHeaders = [['Data/Ora', 'Temp (C)', 'Tensiune (TA)', 'Puls (bpm)', 'Greutate (kg)', 'Logat de']];
+    const vitalsHeaders = [[removeDiacritics('Data/Ora'), 'Temp (C)', removeDiacritics('Tensiune (TA)'), 'Puls (bpm)', 'Greutate (kg)', removeDiacritics('Logat de')]];
     const vitalsBody = medicalVitals.value.map(v => [
       new Date(v.data_masurare).toLocaleString('ro-RO'),
       v.temperatura ? `${v.temperatura} C` : '-',
       v.tensiune || '-',
       v.puls ? `${v.puls} bpm` : '-',
       v.greutate ? `${v.greutate} kg` : '-',
-      v.nume_asistent
+      removeDiacritics(v.nume_asistent)
     ]);
 
     autoTable(doc, {
       startY: vitalsStartY + 5,
       head: vitalsHeaders,
       body: vitalsBody,
-      theme: 'striped',
-      headStyles: { fillColor: [230, 81, 0], fontSize: 10, halign: 'center' }, // Orange accent
-      bodyStyles: { fontSize: 9, halign: 'center' },
-      columnStyles: {
-        0: { halign: 'left', cellWidth: 40 },
-        5: { halign: 'left', cellWidth: 40 }
-      },
+      theme: 'plain',
+      headStyles: { fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
       margin: { left: 15, right: 15 }
     });
 
@@ -549,18 +587,17 @@ const generatePatientReportPDF = async () => {
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setTextColor(150, 150, 150);
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
       doc.text(`Pagina ${i} din ${pageCount}`, 195, 285, { align: 'right' });
-      doc.text(`Sistem Hospital Manager - Raport Confidential: ${patientName}`, 15, 285);
+      doc.text(removeDiacritics(`Sistem Hospital Manager - Raport Confidential: ${patientName}`), 15, 285);
     }
 
-    const sanitizedFileName = patientName.replace(/\s+/g, '_');
+    const sanitizedFileName = removeDiacritics(patientName).replace(/\s+/g, '_');
     doc.save(`Fisa_Medicala_${sanitizedFileName}_${selectedAdmission.value.cod_internare}.pdf`);
     notify.show('Fișa medicală PDF a fost descărcată!', 'success');
   } catch (err) {
     console.error("Eroare generare PDF pacient:", err);
-    notify.show("Eroare la generarea raportului PDF", "error");
   }
 };
 
@@ -658,18 +695,169 @@ const save = async () => {
   }
 };
 
-// Externare pacient
-const discharge = async (item) => {
-  if (!confirm('Doriți să externați pacientul?')) {
-      return;
-  }
-  
+const generateBiletExternarePDF = async (admission, recommendations = '') => {
   try {
-    await axios.post(`/api/admissions/${item.id}/discharge`, {}, getAuthHeader());
-    notify.show('Pacient externat cu succes!', 'success');
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+
+    const [treatmentsRes, vitalsRes] = await Promise.all([
+      axios.get(`/api/admissions/${admission.id}/treatments`, getAuthHeader()),
+      axios.get(`/api/admissions/${admission.id}/vitals`, getAuthHeader())
+    ]);
+    const treatments = treatmentsRes.data;
+    const vitals = vitalsRes.data;
+
+    const doc = new jsPDF();
+
+    const patientName = admission.Patient 
+      ? `${admission.Patient.firstName} ${admission.Patient.lastName}`
+      : 'N/A';
+
+    // 1. Antet (Printer-friendly: White background, black text, clean divider line)
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text(removeDiacritics('BILET DE EXTERNARE'), 15, 20);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}`, 15, 28);
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(15, 33, 195, 33);
+
+    // 2. Date Identificare & Detalii Spitalizare
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(removeDiacritics('1. Date Identificare & Spitalizare'), 15, 45);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    doc.text(removeDiacritics(`Nume Pacient: ${patientName}`), 15, 53);
+    doc.text(`CNP: ${admission.Patient?.cnp || 'N/A'}`, 15, 60);
+
+    doc.text(`Cod Internare: ${admission.cod_internare}`, 110, 53);
+    doc.text(`Data Internarii: ${new Date(admission.data_internare).toLocaleDateString('ro-RO')}`, 110, 60);
+    doc.text(`Data Externarii: ${new Date().toLocaleDateString('ro-RO')}`, 110, 67);
+
+    const locationText = admission.Pat 
+      ? `${admission.Pat.Salon.Sectie.nume} / Sal ${admission.Pat.Salon.cod_salon} / Pat ${admission.Pat.cod_pat}`
+      : 'Nealocat';
+
+    doc.text(removeDiacritics(`Sectie/Locatie: ${locationText}`), 15, 67);
+
+    const diagText = removeDiacritics(`Diagnostic externare: ${admission.diagnostic}`);
+    const splitDiag = doc.splitTextToSize(diagText, 180);
+    doc.text(splitDiag, 15, 74);
+
+    let yOffset = 74 + (splitDiag.length * 5);
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(15, yOffset + 2, 195, yOffset + 2);
+
+    // 3. Recomandari medicale la externare
+    yOffset += 12;
+    if (recommendations) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(removeDiacritics('2. Recomandari Medicale la Externare'), 15, yOffset);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const splitRecs = doc.splitTextToSize(removeDiacritics(recommendations), 180);
+      doc.text(splitRecs, 15, yOffset + 7);
+      
+      yOffset += 7 + (splitRecs.length * 5);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      doc.line(15, yOffset + 2, 195, yOffset + 2);
+      yOffset += 12;
+    } else {
+      yOffset += 2;
+    }
+
+    // 4. Schema de Tratament Urmată / Recomandată
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(removeDiacritics('3. Schema de Tratament din timpul Spitalizarii'), 15, yOffset);
+
+    const treatmentHeaders = [[removeDiacritics('Tratament Prescris'), removeDiacritics('Data Prescrierii')]];
+    const treatmentBody = treatments.map(t => [
+      removeDiacritics(t.descriere),
+      new Date(t.data_tratament).toLocaleString('ro-RO')
+    ]);
+
+    autoTable(doc, {
+      startY: yOffset + 5,
+      head: treatmentHeaders,
+      body: treatmentBody.length ? treatmentBody : [[removeDiacritics('Nu au fost prescrise tratamente specifice pe parcursul spitalizarii.'), '-']],
+      theme: 'plain',
+      headStyles: { fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+      margin: { left: 15, right: 15 }
+    });
+
+    // 5. Partea de semnătură/parafă medic
+    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || (yOffset + 40);
+    let signY = finalY + 25;
+    if (signY > 260) {
+      doc.addPage();
+      signY = 40;
+    }
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(removeDiacritics('Semnatura si Parafa Medic,'), 140, signY);
+    doc.line(140, signY + 15, 190, signY + 15);
+
+    // Footer pe pagini
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Pagina ${i} din ${pageCount}`, 195, 285, { align: 'right' });
+      doc.text(removeDiacritics(`Sistem Hospital Manager - Bilet de Externare: ${patientName}`), 15, 285);
+    }
+
+    const sanitizedFileName = removeDiacritics(patientName).replace(/\s+/g, '_');
+    doc.save(`Bilet_de_Externare_${sanitizedFileName}_${admission.cod_internare}.pdf`);
+  } catch (err) {
+    console.error("Eroare generare PDF bilet externare:", err);
+    notify.show("Eroare la generarea biletului de externare PDF", "error");
+  }
+};
+
+// Externare pacient - Deschidere dialog
+const openDischargeDialog = (item) => {
+  selectedDischargeItem.value = item;
+  dischargeRecommendations.value = '';
+  dischargeDialog.value = true;
+};
+
+// Confirmare externare din dialog
+const submitDischarge = async () => {
+  if (!selectedDischargeItem.value) return;
+  
+  dischargeLoading.value = true;
+  try {
+    await axios.post(`/api/admissions/${selectedDischargeItem.value.id}/discharge`, {}, getAuthHeader());
+    notify.show('Pacient externat cu succes! Se descarcă biletul de externare...', 'success');
+    
+    // Generăm biletul de externare cu recomandările trimise de utilizator
+    await generateBiletExternarePDF(selectedDischargeItem.value, dischargeRecommendations.value);
+    
+    dischargeDialog.value = false;
     fetchData();
   } catch (error) {
+    console.error(error);
     notify.show("Eroare la externare", 'error');
+  } finally {
+    dischargeLoading.value = false;
   }
 };
 

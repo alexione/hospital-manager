@@ -16,6 +16,6 @@ const Sectie = sequelize.define('Sectie', {
         type: DataTypes.STRING,
         allowNull: false
     }
-});
+}, { tableName: 'Sectii' });
 
 export default Sectie;

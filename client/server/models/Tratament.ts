@@ -20,6 +20,6 @@ const Tratament = sequelize.define('Tratament', {
         allowNull: false,
         defaultValue: DataTypes.NOW
     }
-});
+}, { tableName: 'Tratamente' });
 
 export default Tratament;

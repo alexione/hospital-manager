@@ -406,6 +406,18 @@ const getStatusColor = (status) => {
     return 'grey';
 };
 
+const removeDiacritics = (text) => {
+    if (!text) return '';
+    return text
+        .replace(/ș/g, 's').replace(/Ș/g, 'S')
+        .replace(/ț/g, 't').replace(/Ț/g, 'T')
+        .replace(/ş/g, 's').replace(/Ş/g, 'S')
+        .replace(/ţ/g, 't').replace(/Ţ/g, 'T')
+        .replace(/ă/g, 'a').replace(/Ă/g, 'A')
+        .replace(/â/g, 'a').replace(/Â/g, 'A')
+        .replace(/î/g, 'i').replace(/Î/g, 'I');
+};
+
 const generateGeneralReportPDF = async () => {
     if (!reportsData.value) return;
     
@@ -415,89 +427,86 @@ const generateGeneralReportPDF = async () => {
         
         const doc = new jsPDF();
         
-        // Culoare principala (Navy Blue)
-        const primaryColor = [13, 71, 161];
-        
-        // 1. Antet
-        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.rect(0, 0, 210, 40, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
+        // 1. Antet (Printer-friendly: White background, black text, clean divider line)
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
-        doc.text('RAPORT GENERAL - HOSPITAL MANAGER', 15, 20);
+        doc.text(removeDiacritics('RAPORT GENERAL - HOSPITAL MANAGER'), 15, 20);
         
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Utilizator: ${userEmail.value}`, 15, 30);
+        doc.setTextColor(80, 80, 80);
+        doc.text(removeDiacritics(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Utilizator: ${userEmail.value}`), 15, 28);
+
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(15, 33, 195, 33);
         
         // 2. Sectiunea: Indicatori Cheie
-        doc.setTextColor(33, 33, 33);
-        doc.setFontSize(15);
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('1. Indicatori Statistici Generali', 15, 55);
+        doc.text(removeDiacritics('1. Indicatori Statistici Generali'), 15, 45);
         
         // Desenam cutii pentru indicatori
-        const startY = 62;
+        const startY = 50;
         const colWidth = 55;
-        const boxHeight = 20;
+        const boxHeight = 18;
         
         const metrics = [
-            { label: 'Pacienti Inregistrati', val: reportsData.value.totalPacienti },
-            { label: 'Pacienti Internati', val: reportsData.value.totalInternati }
+            { label: removeDiacritics('Pacienti Inregistrati'), val: reportsData.value.totalPacienti },
+            { label: removeDiacritics('Pacienti Internati'), val: reportsData.value.totalInternati }
         ];
         
         metrics.forEach((m, idx) => {
             const x = 15 + idx * (colWidth + 8);
-            doc.setFillColor(245, 245, 245);
-            doc.rect(x, startY, colWidth, boxHeight, 'F');
-            doc.setDrawColor(220, 220, 220);
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.2);
             doc.rect(x, startY, colWidth, boxHeight, 'D');
             
             doc.setTextColor(100, 100, 100);
-            doc.setFontSize(9);
+            doc.setFontSize(8.5);
             doc.setFont('helvetica', 'normal');
-            doc.text(m.label, x + 4, startY + 6);
+            doc.text(m.label, x + 4, startY + 5);
             
-            doc.setTextColor(13, 71, 161);
-            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(13);
             doc.setFont('helvetica', 'bold');
-            doc.text(String(m.val), x + 4, startY + 15);
+            doc.text(String(m.val), x + 4, startY + 13);
         });
         
         const metricsRow2 = [
-            { label: 'Personal Medical', val: reportsData.value.totalAngajati },
-            { label: 'Capacitate Paturi', val: `${reportsData.value.paturiOcupateCount} / ${reportsData.value.totalPaturi}` },
-            { label: 'Grad General Ocupare', val: `${reportsData.value.totalPaturi > 0 ? Math.round((reportsData.value.paturiOcupateCount / reportsData.value.totalPaturi) * 100) : 0}%` }
+            { label: removeDiacritics('Personal Medical'), val: reportsData.value.totalAngajati },
+            { label: removeDiacritics('Capacitate Paturi'), val: `${reportsData.value.paturiOcupateCount} / ${reportsData.value.totalPaturi}` },
+            { label: removeDiacritics('Grad General Ocupare'), val: `${reportsData.value.totalPaturi > 0 ? Math.round((reportsData.value.paturiOcupateCount / reportsData.value.totalPaturi) * 100) : 0}%` }
         ];
         
         metricsRow2.forEach((m, idx) => {
             const x = 15 + idx * (colWidth + 8);
-            const y = startY + boxHeight + 6;
-            doc.setFillColor(245, 245, 245);
-            doc.rect(x, y, colWidth, boxHeight, 'F');
-            doc.setDrawColor(220, 220, 220);
+            const y = startY + boxHeight + 5;
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.2);
             doc.rect(x, y, colWidth, boxHeight, 'D');
             
             doc.setTextColor(100, 100, 100);
-            doc.setFontSize(9);
+            doc.setFontSize(8.5);
             doc.setFont('helvetica', 'normal');
-            doc.text(m.label, x + 4, y + 6);
+            doc.text(m.label, x + 4, y + 5);
             
-            doc.setTextColor(m.label.includes('Grad') ? 224 : 13, m.label.includes('Grad') ? 124 : 71, m.label.includes('Grad') ? 0 : 161);
-            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(13);
             doc.setFont('helvetica', 'bold');
-            doc.text(String(m.val), x + 4, y + 15);
+            doc.text(String(m.val), x + 4, y + 13);
         });
         
         // 3. Sectiunea: Distributie Paturi pe Sectii
-        doc.setTextColor(33, 33, 33);
-        doc.setFontSize(15);
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('2. Grad de Ocupare pe Sectii', 15, startY + boxHeight * 2 + 20);
+        doc.text(removeDiacritics('2. Grad de Ocupare pe Sectii'), 15, startY + boxHeight * 2 + 15);
         
         const tableBody = reportsData.value.sectiiStats.map(s => [
-            s.nume,
+            removeDiacritics(s.nume),
             s.cod_sectie,
             s.total_saloane,
             `${s.paturi_ocupate} / ${s.total_paturi}`,
@@ -505,12 +514,12 @@ const generateGeneralReportPDF = async () => {
         ]);
         
         autoTable(doc, {
-            startY: startY + boxHeight * 2 + 25,
-            head: [['Sectie', 'Cod', 'Saloane', 'Paturi (Ocupate / Totale)', 'Grad Ocupare']],
+            startY: startY + boxHeight * 2 + 20,
+            head: [[removeDiacritics('Sectie'), 'Cod', 'Saloane', removeDiacritics('Paturi (Ocupate / Totale)'), 'Grad Ocupare']],
             body: tableBody,
-            theme: 'striped',
-            headStyles: { fillColor: primaryColor, halign: 'center' },
-            bodyStyles: { halign: 'center' },
+            theme: 'plain',
+            headStyles: { fontStyle: 'bold', fontSize: 9, halign: 'center' },
+            bodyStyles: { fontSize: 8.5, halign: 'center' },
             columnStyles: { 0: { halign: 'left' } },
             margin: { left: 15, right: 15 }
         });
@@ -519,10 +528,10 @@ const generateGeneralReportPDF = async () => {
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(9);
-            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
             doc.text(`Pagina ${i} din ${pageCount}`, 195, 285, { align: 'right' });
-            doc.text('Sistem Hospital Manager - Raport Confidential', 15, 285);
+            doc.text(removeDiacritics('Sistem Hospital Manager - Raport Confidential'), 15, 285);
         }
         
         doc.save(`Raport_General_Spital_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -542,39 +551,38 @@ const generateAdmittedPatientsPDF = async () => {
         
         const doc = new jsPDF();
         
-        // Culoare secundara (Orange/Deep Orange)
-        const headerColor = [230, 81, 0]; 
-        
-        // 1. Antet
-        doc.setFillColor(headerColor[0], headerColor[1], headerColor[2]);
-        doc.rect(0, 0, 210, 40, 'F');
-        
-        doc.setTextColor(255, 255, 255);
+        // 1. Antet (Printer-friendly: White background, black text, clean divider line)
+        doc.setTextColor(0, 0, 0);
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
-        doc.text('REGISTRU PACIENTI INTERNATI', 15, 20);
+        doc.text(removeDiacritics('REGISTRU PACIENTI INTERNATI'), 15, 20);
         
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Total pacienti spitalizati: ${reportsData.value.totalInternati}`, 15, 30);
+        doc.setTextColor(80, 80, 80);
+        doc.text(removeDiacritics(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Total pacienti spitalizati: ${reportsData.value.totalInternati}`), 15, 28);
+
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(15, 33, 195, 33);
         
         // 2. Tabelul cu pacienti
         const tableBody = reportsData.value.internariActive.map((int, index) => [
             index + 1,
-            int.pacient ? `${int.pacient.lastName} ${int.pacient.firstName}` : 'N/A',
+            int.pacient ? removeDiacritics(`${int.pacient.lastName} ${int.pacient.firstName}`) : 'N/A',
             int.pacient ? int.pacient.cnp : 'N/A',
-            int.diagnostic,
-            int.pat ? `${int.pat.sectie} / Sal ${int.pat.salon} / Pat ${int.pat.cod_pat}` : 'Nealocat',
+            removeDiacritics(int.diagnostic),
+            int.pat ? removeDiacritics(`${int.pat.sectie} / Sal ${int.pat.salon} / Pat ${int.pat.cod_pat}`) : 'Nealocat',
             int.status.toUpperCase(),
             new Date(int.data_internare).toLocaleDateString('ro-RO')
         ]);
         
         autoTable(doc, {
-            startY: 50,
+            startY: 40,
             head: [['Nr', 'Nume Pacient', 'CNP', 'Diagnostic', 'Locatie (Sectie/Salon/Pat)', 'Status', 'Data Internarii']],
             body: tableBody,
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, fontSize: 9, halign: 'center' },
+            theme: 'plain',
+            headStyles: { fontStyle: 'bold', fontSize: 9, halign: 'center' },
             bodyStyles: { fontSize: 8 },
             columnStyles: { 
                 0: { halign: 'center' },
@@ -589,10 +597,10 @@ const generateAdmittedPatientsPDF = async () => {
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(9);
-            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
             doc.text(`Pagina ${i} din ${pageCount}`, 195, 285, { align: 'right' });
-            doc.text('Sistem Hospital Manager - Registru Pacienti Internati', 15, 285);
+            doc.text(removeDiacritics('Sistem Hospital Manager - Registru Pacienti Internati'), 15, 285);
         }
         
         doc.save(`Registru_Internari_${new Date().toISOString().split('T')[0]}.pdf`);

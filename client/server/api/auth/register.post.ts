@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
         cod_angajat,
         email,
         password: hashedPassword,
-        role: role || 'Recepție'
+        role: role || 'Registratură'
     });
 
     return { message: "Utilizator înregistrat cu succes!" };

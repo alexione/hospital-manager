@@ -24,6 +24,6 @@ const Administrare = sequelize.define('Administrare', {
         type: DataTypes.TEXT,
         allowNull: true
     }
-});
+}, { tableName: 'Administrari' });
 
 export default Administrare;

@@ -3,7 +3,7 @@ import { Angajat } from '../../models';
 export default defineEventHandler(async (event) => {
     try {
         const angajati = await Angajat.findAll({
-            attributes: { exclude: ['password'] }, // Nu trimitem parolele către frontend
+            attributes: { exclude: ['password'] },
             order: [['createdAt', 'DESC']]
         });
         return angajati;

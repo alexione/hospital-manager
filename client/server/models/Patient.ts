@@ -41,6 +41,6 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.STRING,
         allowNull: true
     }
-});
+}, { tableName: 'Pacienti' });
 
 export default Patient;

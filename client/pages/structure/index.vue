@@ -365,7 +365,7 @@ const structure = ref([]);
 const isAdmin = computed(() => authStore.isAdmin);
 const canDownloadReports = computed(() => {
   const role = authStore.user?.role?.toLowerCase();
-  return role !== 'recepție' && role !== 'receptie';
+  return role !== 'registratură';
 });
 const loadingPdf = ref(false);
 
@@ -536,6 +536,18 @@ const getPatientDiagnostic = (pat) => {
   return active ? active.diagnostic : '';
 };
 
+const removeDiacritics = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/ș/g, 's').replace(/Ș/g, 'S')
+    .replace(/ț/g, 't').replace(/Ț/g, 'T')
+    .replace(/ş/g, 's').replace(/Ş/g, 'S')
+    .replace(/ţ/g, 't').replace(/Ţ/g, 'T')
+    .replace(/ă/g, 'a').replace(/Ă/g, 'A')
+    .replace(/â/g, 'a').replace(/Â/g, 'A')
+    .replace(/î/g, 'i').replace(/Î/g, 'I');
+};
+
 const generateBedsStatusPDF = async () => {
   if (!selectedSectie.value) return;
   loadingPdf.value = true;
@@ -570,11 +582,11 @@ const generateBedsStatusPDF = async () => {
             const pDiag = getPatientDiagnostic(pat);
 
             tableBody.push([
-              `Salon ${salon.cod_salon}`,
-              `Pat ${pat.cod_pat}`,
+              removeDiacritics(`Salon ${salon.cod_salon}`),
+              removeDiacritics(`Pat ${pat.cod_pat}`),
               occupied ? 'OCUPAT' : 'LIBER',
-              occupied ? pName : '-',
-              occupied ? (pDiag || 'Fără diagnostic completat') : '-'
+              occupied ? removeDiacritics(pName) : '-',
+              occupied ? (removeDiacritics(pDiag) || 'Fara diagnostic completat') : '-'
             ]);
           });
         }
@@ -583,105 +595,82 @@ const generateBedsStatusPDF = async () => {
 
     const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
 
-    // Culoare principală: Teal modern
-    const primaryColor = [0, 150, 136];
-
-    // 1. Antet profesional
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 40, 'F');
-
-    doc.setTextColor(255, 255, 255);
+    // 1. Antet profesional (Printer-friendly: alb, text negru, divider line)
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('SITUATIA OCUPARII PATURILOR', 15, 20);
+    doc.text(removeDiacritics('SITUATIA OCUPARII PATURILOR'), 15, 20);
 
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Sectia: ${sectie.nume} (${sectie.cod_sectie})`, 15, 28);
-    doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Utilizator: ${authStore.user?.email || 'N/A'}`, 15, 34);
+    doc.setTextColor(80, 80, 80);
+    doc.text(removeDiacritics(`Sectia: ${sectie.nume} (${sectie.cod_sectie})`), 15, 28);
+    doc.text(removeDiacritics(`Generat la: ${new Date().toLocaleString('ro-RO')}  |  Utilizator: ${authStore.user?.email || 'N/A'}`), 15, 34);
+
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(15, 38, 195, 38);
 
     // 2. Casete indicatori statistici
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('1. Indicatori de Capacitate si Ocupare', 15, 55);
+    doc.text(removeDiacritics('1. Indicatori de Capacitate si Ocupare'), 15, 48);
 
-    const startY = 62;
+    const startY = 53;
     const colWidth = 43;
-    const boxHeight = 22;
+    const boxHeight = 20;
 
     const metrics = [
-      { label: 'Total Saloane', val: totalSalons, color: [33, 33, 33] },
-      { label: 'Total Paturi', val: totalBeds, color: [33, 150, 243] },
-      { label: 'Paturi Ocupate', val: occupiedBeds, color: [244, 67, 54] },
-      { label: 'Paturi Libere', val: availableBeds, color: [76, 175, 80] }
+      { label: removeDiacritics('Total Saloane'), val: totalSalons },
+      { label: removeDiacritics('Total Paturi'), val: totalBeds },
+      { label: removeDiacritics('Paturi Ocupate'), val: occupiedBeds },
+      { label: removeDiacritics('Paturi Libere'), val: availableBeds }
     ];
 
     metrics.forEach((m, idx) => {
       const x = 15 + idx * (colWidth + 6);
-      doc.setFillColor(248, 249, 250);
-      doc.rect(x, startY, colWidth, boxHeight, 'F');
-      doc.setDrawColor(222, 226, 230);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
       doc.rect(x, startY, colWidth, boxHeight, 'D');
 
-      doc.setTextColor(108, 117, 125);
+      doc.setTextColor(100, 100, 100);
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
       doc.text(m.label, x + 4, startY + 6);
 
-      doc.setTextColor(m.color[0], m.color[1], m.color[2]);
-      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
-      doc.text(String(m.val), x + 4, startY + 16);
+      doc.text(String(m.val), x + 4, startY + 14);
     });
 
     // Rata de ocupare vizuală
     const rateX = 15;
-    const rateY = startY + boxHeight + 6;
+    const rateY = startY + boxHeight + 5;
     const rateWidth = 180;
-    const rateHeight = 15;
-    doc.setFillColor(240, 242, 245);
-    doc.rect(rateX, rateY, rateWidth, rateHeight, 'F');
-    doc.setDrawColor(206, 212, 218);
+    const rateHeight = 12;
+    doc.setDrawColor(200, 200, 200);
     doc.rect(rateX, rateY, rateWidth, rateHeight, 'D');
 
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9.5);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Rata generala de ocupare a sectiei: ${occupancyRate}%`, rateX + 6, rateY + 9.5);
-
-    // Bara de progres vizuală în PDF
-    const barX = rateX + 95;
-    const barY = rateY + 4.5;
-    const barWidth = 75;
-    const barHeight = 6;
-    doc.setFillColor(222, 226, 230);
-    doc.rect(barX, barY, barWidth, barHeight, 'F');
-    if (occupancyRate > 0) {
-      const fillWidth = (occupancyRate / 100) * barWidth;
-      if (occupancyRate < 50) {
-        doc.setFillColor(76, 175, 80); // verde
-      } else if (occupancyRate < 85) {
-        doc.setFillColor(255, 152, 0); // portocaliu
-      } else {
-        doc.setFillColor(244, 67, 54); // rosu
-      }
-      doc.rect(barX, barY, fillWidth, barHeight, 'F');
-    }
+    doc.text(removeDiacritics(`Rata generala de ocupare a sectiei: ${occupancyRate}%`), rateX + 4, rateY + 8);
 
     // 3. Tabel detaliat cu paturi
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('2. Inventar Detaliat Paturi', 15, rateY + rateHeight + 15);
+    doc.text(removeDiacritics('2. Inventar Detaliat Paturi'), 15, rateY + rateHeight + 12);
 
     autoTable(doc, {
-      startY: rateY + rateHeight + 20,
-      head: [['Salon', 'Identificator Pat', 'Stare Pat', 'Pacient Internat', 'Diagnostic']],
-      body: tableBody.length ? tableBody : [['-', '-', 'Nu exista paturi inregistrate', '-', '-']],
-      theme: 'grid',
-      headStyles: { fillColor: primaryColor, halign: 'center', fontSize: 10 },
-      bodyStyles: { fontSize: 9 },
+      startY: rateY + rateHeight + 17,
+      head: [[removeDiacritics('Salon'), removeDiacritics('Identificator Pat'), removeDiacritics('Stare Pat'), removeDiacritics('Pacient Internat'), removeDiacritics('Diagnostic')]],
+      body: tableBody.length ? tableBody : [['-', '-', removeDiacritics('Nu exista paturi inregistrate'), '-', '-']],
+      theme: 'rowlines',
+      headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 9, halign: 'center' },
+      bodyStyles: { fontSize: 8.5, textColor: [30, 30, 30] },
       columnStyles: {
         0: { halign: 'center', fontStyle: 'bold' },
         1: { halign: 'center' },
@@ -692,10 +681,10 @@ const generateBedsStatusPDF = async () => {
       didParseCell: function(data) {
         if (data.column.index === 2 && data.cell.section === 'body') {
           if (data.cell.text[0] === 'OCUPAT') {
-            data.cell.styles.textColor = [211, 47, 47];
+            data.cell.styles.textColor = [180, 0, 0];
             data.cell.styles.fontStyle = 'bold';
           } else if (data.cell.text[0] === 'LIBER') {
-            data.cell.styles.textColor = [56, 142, 60];
+            data.cell.styles.textColor = [0, 120, 0];
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -707,10 +696,10 @@ const generateBedsStatusPDF = async () => {
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(8.5);
-      doc.setTextColor(150, 150, 150);
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
       doc.text(`Pagina ${i} din ${pageCount}`, 195, 287, { align: 'right' });
-      doc.text(`Spitalul Clinic - Raport Capacitate Cazare Sectia ${sectie.nume}`, 15, 287);
+      doc.text(removeDiacritics(`Spitalul Clinic - Raport Capacitate Cazare Sectia ${sectie.nume}`), 15, 287);
     }
 
     doc.save(`Situatie_Paturi_${sectie.cod_sectie}_${new Date().toISOString().split('T')[0]}.pdf`);

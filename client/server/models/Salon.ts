@@ -15,6 +15,6 @@ const Salon = sequelize.define('Salon', {
         type: DataTypes.INTEGER,
         allowNull: false
     }
-});
+}, { tableName: 'Saloane' });
 
 export default Salon;

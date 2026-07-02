@@ -37,6 +37,6 @@ const Internare = sequelize.define('Internare', {
         type: DataTypes.ENUM('internat', 'externat', 'urgență', 'decedat'),
         defaultValue: 'internat'
     }
-});
+}, { tableName: 'Internari' });
 
 export default Internare;

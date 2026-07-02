@@ -11,12 +11,10 @@ export default defineEventHandler(async (event) => {
 
         const body = await readBody(event);
         
-        // Nu permitem modificarea parolei aici, doar a rolului sau numelui
         if (body.password) delete body.password;
         
         await angajat.update(body);
         
-        // Ascundem parola înainte de a returna obiectul
         const updatedAngajat = angajat.toJSON();
         delete updatedAngajat.password;
         

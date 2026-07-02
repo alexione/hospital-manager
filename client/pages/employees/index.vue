@@ -21,7 +21,7 @@
           <v-data-table :headers="headers" :items="employees" :loading="loading" :search="search" class="pa-2">
 
             <template v-slot:item.nume="{ item }">
-              {{ item.nume }} {{ item.prenume }}
+              {{ item.nume }}
             </template>
 
             <template v-slot:item.role="{ item }">
@@ -51,7 +51,7 @@
                     type="email"></v-text-field>
                   <v-text-field v-if="!isEditing" v-model="editedItem.password" label="Parolă" required
                     type="password"></v-text-field>
-                  <v-select v-model="editedItem.role" :items="['Admin', 'Medic', 'Asistent', 'Recepție']" label="Rol"
+                  <v-select v-model="editedItem.role" :items="['Admin', 'Medic', 'Asistent', 'Registratură']" label="Rol"
                     required></v-select>
                 </v-form>
               </v-container>
@@ -134,7 +134,7 @@ const fetchEmployees = async () => {
 
 const openAddDialog = () => {
   isEditing.value = false;
-  editedItem.value = { nume: '', prenume: '', email: '', password: '', role: 'Recepție' };
+  editedItem.value = { nume: '', prenume: '', email: '', password: '', role: 'Registratură' };
   dialog.value = true;
 };
 
