@@ -505,7 +505,7 @@ const generatePatientReportPDF = async () => {
 
   try {
     const { jsPDF } = await import('jspdf');
-    const autoTable = (await import('jspdf-autotable')).default;
+    const { autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF();
     const patientName = selectedAdmission.value.Patient 
@@ -738,7 +738,7 @@ const save = async () => {
 const generateBiletExternarePDF = async (admission, recommendations = '') => {
   try {
     const { jsPDF } = await import('jspdf');
-    const autoTable = (await import('jspdf-autotable')).default;
+    const { autoTable } = await import('jspdf-autotable');
 
     const [treatmentsRes, vitalsRes] = await Promise.all([
       axios.get(`/api/admissions/${admission.id}/treatments`, getAuthHeader()),

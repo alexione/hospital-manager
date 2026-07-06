@@ -72,7 +72,7 @@
                     <v-col cols="12" class="py-1">
                       <v-file-input 
                         v-model="imageFile" 
-                        label="Poză Pacient / Document" 
+                        label="Poză Pacient" 
                         prepend-inner-icon="mdi-camera" 
                         prepend-icon=""
                         variant="outlined" 

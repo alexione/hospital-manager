@@ -443,7 +443,7 @@ const generateGeneralReportPDF = async () => {
     
     try {
         const { jsPDF } = await import('jspdf');
-        const autoTable = (await import('jspdf-autotable')).default;
+        const { autoTable } = await import('jspdf-autotable');
         
         const doc = new jsPDF();
         
@@ -567,7 +567,7 @@ const generateAdmittedPatientsPDF = async () => {
     
     try {
         const { jsPDF } = await import('jspdf');
-        const autoTable = (await import('jspdf-autotable')).default;
+        const { autoTable } = await import('jspdf-autotable');
         
         const doc = new jsPDF();
         

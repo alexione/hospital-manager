@@ -558,7 +558,7 @@ const generateBedsStatusPDF = async () => {
   loadingPdf.value = true;
   try {
     const { jsPDF } = await import('jspdf');
-    const autoTable = (await import('jspdf-autotable')).default;
+    const { autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF();
     const sectie = selectedSectie.value;
@@ -673,7 +673,7 @@ const generateBedsStatusPDF = async () => {
       startY: rateY + rateHeight + 17,
       head: [[removeDiacritics('Salon'), removeDiacritics('Identificator Pat'), removeDiacritics('Stare Pat'), removeDiacritics('Pacient Internat'), removeDiacritics('Diagnostic')]],
       body: tableBody.length ? tableBody : [['-', '-', removeDiacritics('Nu exista paturi inregistrate'), '-', '-']],
-      theme: 'rowlines',
+      theme: 'plain',
       headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 9, halign: 'center' },
       bodyStyles: { fontSize: 8.5, textColor: [30, 30, 30] },
       columnStyles: {
