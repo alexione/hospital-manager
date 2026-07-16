@@ -58,9 +58,9 @@
       ></v-list-item>
  
       <div v-if="isAdmin">
-        <v-divider class="my-4 border-opacity-15"></v-divider>
+        <v-divider class="my-4 border-opacity-15 admin-divider"></v-divider>
  
-        <div class="text-overline text-indigo-lighten-3 px-3 mb-2 font-weight-bold">
+        <div class="text-overline text-indigo-lighten-3 px-3 mb-2 font-weight-bold admin-section-title">
           ADMINISTRARE
         </div>
  
@@ -119,3 +119,11 @@ const handleLogout = () => {
   navigateTo("/login");
 };
 </script>
+
+<style scoped>
+/* Ascunde divizorul și titlul secțiunii de administrare când sidebar-ul este restrâns (rail) și nu este hover-uit */
+.v-navigation-drawer--rail:not(:hover) .admin-divider,
+.v-navigation-drawer--rail:not(:hover) .admin-section-title {
+  display: none !important;
+}
+</style>

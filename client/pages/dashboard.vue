@@ -22,7 +22,7 @@
             </div>
         </v-app-bar>
 
-        <v-main class="bg-slate-50">
+        <v-main class="bg-slate-50" style="height: calc(100vh - 64px); overflow-y: auto;">
             <v-container fluid class="pa-6">
 
                 <div class="mb-6">
